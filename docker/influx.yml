@@ -1,0 +1,40 @@
+version: "3.3"
+
+services:
+## ===================================================================================
+
+  influxdb:
+    image: influxdb
+    # See https://hub.docker.com/_/influxdb/
+    environment:
+      #- "INFLUXDB_<section>_<name>=<value>"
+      - "INFLUXDB_DB="
+    ports:
+      - "8086:8086"
+      - "8088:8088"
+    volumes:
+      - ../../data/influxdb/data:/var/lib/influxdb:rw
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 50m
+
+  chronograf:
+    image: chronograf
+    # See https://hub.docker.com/_/influxdb/
+    environment:
+      #- "INFLUXDB_<section>_<name>=<value>"
+      - "INFLUXDB_DB="
+      - "INFLUXDB_REPORTING_DISABLED=true"
+    ports:
+      - "10.0.2.15:80:8888"
+    volumes:
+      - ../../data/chronograf/data:/var/lib/chronograf:rw
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - '--influxdb-url=http://10.100.224.112:8086'
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 50m
