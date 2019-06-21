@@ -1,0 +1,23 @@
+FROM alpine:3.8
+
+# Install dependencies
+RUN apk add --update git python3 py3-lxml py3-cryptography openssh \
+    && rm -rf /var/cache/apk/*
+
+RUN adduser -h /script -S user
+WORKDIR /script
+
+COPY files/runner.sh /script/
+RUN chown user:nogroup /script/runner.sh
+RUN chmod a+x /script/runner.sh
+RUN mkdir -m 777 /git
+
+# USER user
+
+ENV REST_PASSWD="--not set--"
+ENV CI_BRANCH="release"
+
+ENTRYPOINT ["/script/runner.sh"]
+CMD [""]
+
+# eof
