@@ -16,6 +16,15 @@ RUN pip install -r requirements.txt
 
 COPY . /app
 
-ENTRYPOINT [ "python3" ]
+# https://github.com/moby/moby/issues/21650
+ENV FLASK_APP app.py
+ENV LC_ALL C.UTF-8
+ENV LANG C.UTF-8
 
-CMD [ "app.py" ]
+ENTRYPOINT ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
+
+#ENTRYPOINT [ "python3" ]
+
+#CMD [ "app.py" ]
+
+EXPOSE 5000/tcp
