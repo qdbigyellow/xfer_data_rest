@@ -4,7 +4,7 @@ from typing import Optional, Any, Dict
 
 def push_data_to_gateway(job_name: str, gauge_name: str, gauge_detail: str, data: Any,
                          labels: Dict[str, str] = None, grouping_key: Dict[str, str] = None):
-        """
+    """
     :param job_name: name of the job.
     :param gauge_name: the matric name.
     :param gauge_detail: The help text of the matric.
