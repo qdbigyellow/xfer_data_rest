@@ -5,7 +5,6 @@ class Configurations:
         dest : List[str] = ["https://bank.nordea.dk/wemapp/api/credit/fixedrate/bonds.json"]
     
     class DB:
-        INFLUXHOST = "localhost"
-        INFLUXPORT = "8086"
-        DBNAME = "MortageLoan"
+        IP = "192.168.0.6"
+        PUSH_GATEWAY = "9091"
 

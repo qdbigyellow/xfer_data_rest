@@ -1,23 +1,21 @@
-FROM alpine:3.8
+FROM ubuntu:18.04
 
-# Install dependencies
-RUN apk add --update git python3 py3-lxml py3-cryptography openssh \
-    && rm -rf /var/cache/apk/*
+RUN apt-get update -y \
+  && apt-get install -y python3-pip python3-dev \
+  && cd /usr/local/bin \
+  && ln -s /usr/bin/python3 python \
+  && pip3 install --upgrade pip
 
-RUN adduser -h /script -S user
-WORKDIR /script
 
-COPY files/runner.sh /script/
-RUN chown user:nogroup /script/runner.sh
-RUN chmod a+x /script/runner.sh
-RUN mkdir -m 777 /git
+# We copy just the requirements.txt first to leverage Docker cache
+COPY ./requirements.txt /app/requirements.txt
 
-# USER user
+WORKDIR /app
 
-ENV REST_PASSWD="--not set--"
-ENV CI_BRANCH="release"
+RUN pip install -r requirements.txt
 
-ENTRYPOINT ["/script/runner.sh"]
-CMD [""]
+COPY . /app
 
-# eof
+ENTRYPOINT [ "python3" ]
+
+CMD [ "app.py" ]
