@@ -10,6 +10,7 @@ def hello_world():
 @app.route("/getdata")
 def transfer_data_to_dashboard():
     get_rate_data_to_dashboard.transfer_data_to_dashboard()
+    return "Get data Done"
 
 if __name__  == '__main__':
     app.run()
