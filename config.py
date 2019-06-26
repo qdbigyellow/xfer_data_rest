@@ -5,6 +5,6 @@ class Configurations:
         dest : List[str] = ["https://bank.nordea.dk/wemapp/api/credit/fixedrate/bonds.json"]
     
     class DB:
-        IP = "192.168.0.6"
+        IP = "172.17.0.1"
         PUSH_GATEWAY = "9091"
 
