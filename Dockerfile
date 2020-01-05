@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM python:3.8.1-alpine3.11
 
 RUN apt-get update -y \
   && apt-get install -y python3-pip python3-dev \
