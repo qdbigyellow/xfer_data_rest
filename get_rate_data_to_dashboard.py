@@ -11,7 +11,7 @@ def transfer_data_to_dashboard():
             process_loan_rate_data(data)        
 
 def fetch_data():
-    for l in Configurations.Server.dest:
+    for l in Configurations.Endpoints.nordea_kredit:
         result = json.load(request.urlopen(l))
         yield result
 
