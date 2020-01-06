@@ -157,7 +157,7 @@ def generate_data(symbol:str, data: dict, index: int=0):
 
 def main():
     symbols = get_symbol_list()
-    symbols = ['aapl', 'msft']
+    symbols = ['aapl', 'msft', 'fds']
     for symbol in symbols:
         f_data = get_data(symbol)
 
