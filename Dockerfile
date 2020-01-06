@@ -7,7 +7,7 @@ WORKDIR /app
 
 RUN pip install -r requirements.txt
 
-COPY . /app
+# COPY . /app  should volume the local folder
 
 # https://github.com/moby/moby/issues/21650
 ENV FLASK_APP app.py
