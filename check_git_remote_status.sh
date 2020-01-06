@@ -1,5 +1,8 @@
 #!/bin/sh
 
+#https://stackoverflow.com/questions/3258243/check-if-pull-needed-in-git
+git remote -v update
+
 UPSTREAM=${1:-'@{u}'}
 LOCAL=$(git rev-parse @)
 REMOTE=$(git rev-parse "$UPSTREAM")
