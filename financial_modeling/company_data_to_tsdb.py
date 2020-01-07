@@ -6,6 +6,7 @@ import re
 from typing import Mapping
 from company_figures import CompanyFigures
 from collections import defaultdict
+import os
 
 
 def gauge_dict():
@@ -86,9 +87,9 @@ def min_index(data):
 def new_data(last_ts):
     return False
 
-def new_company(last_ts):
-    return True
-
+def new_company(symbol: str):
+    compnay_folder = os.path.join(os.path.abspath(__file__), "timestamp") 
+    return symbol not in os.listdir(compnay_folder)        
 
 def add_data(report: str, data: dict, figures: CompanyFigures, index: int = 0):
     """
@@ -155,18 +156,16 @@ def generate_data(symbol:str, data: dict, index: int=0):
         add_data(k, v, figures, index)
     return figures
 
-def main():
+def company_data_to_tsdb():
     symbols = get_symbol_list()
     symbols = ['aapl', 'msft', 'fds']
     for symbol in symbols:
         f_data = get_data(symbol)
-
         last_ts = last_timestamp(f_data)
         min_ind = min_index(f_data)
 
-        if new_data(last_ts) or new_company(last_ts):
+        if new_data(last_ts) or new_company(symbol):
             for i in range(min_ind): 
-
                 figures = generate_data(symbol, f_data, i)
                 push_figures_to_db(figures)
                 if new_data(last_ts) and i == 0:
