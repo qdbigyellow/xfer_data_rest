@@ -164,12 +164,18 @@ def company_data_to_tsdb():
         last_ts = last_timestamp(f_data)
         min_ind = min_index(f_data)
 
-        if new_data(last_ts) or new_company(symbol):
+        nc = new_company(symbol)
+        nd = new_data(last_timestamp)
+
+        if nc:
+            company_file = os.path.join(os.path.abspath(__file__), "timestamp", ) 
+            with open(company_file, 'w') as f:
+                f.write(last_ts)
+
+        if nc or nd:
             for i in range(min_ind): 
                 figures = generate_data(symbol, f_data, i)
                 push_figures_to_db(figures)
-                if new_data(last_ts) and i == 0:
+                if nd and i == 0:
                     break
-
-            print(figures)
 
