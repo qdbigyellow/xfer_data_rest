@@ -4,7 +4,7 @@ import requests
 from lib.tsdb.prom import push_data_to_gateway
 import re
 from typing import Mapping
-from company_figures import CompanyFigures
+from financial_modeling.company_figures import CompanyFigures
 from collections import defaultdict
 import os
 
