@@ -4,7 +4,7 @@ import urllib.request as request
 from lib.tsdb.prom import push_data_to_gateway
 import re
 
-def transfer_data_to_dashboard():
+def loan_data_to_tsdb():
     for data in fetch_data():
         print(f"{len(data)} is fetched")
         if len(data) > 0 and "rate" in data[0]:
