@@ -40,7 +40,6 @@ def push_figures_to_db(figures: CompanyFigures):
     for k, v in vars(figures).items():
         if not (k == 'name' or k == 'date'):
             gauge_detail = G_DICT[k]
-            print(f"push {figures.name} with gauge name {k}")
             push_to_db(k, v, figures.name, figures.date, gauge_detail)
 
 def push_to_db(name, data, symbol, date, gauge_detail):
