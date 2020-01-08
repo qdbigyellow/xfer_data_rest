@@ -13,7 +13,7 @@ if [ $LOCAL = $REMOTE ]; then
 elif [ $LOCAL = $BASE ]; then
     echo "Need to pull"
     git pull --rebase
-    docker restart 820a
+    docker restart 5b81
 elif [ $REMOTE = $BASE ]; then
     echo "Need to push"
 else
