@@ -212,10 +212,4 @@ def get_company_growth(symbol):
     company_growth_data.set_index("Date", inplace=True)
     return company_growth_data
 
-def plot_data(symbol, data: pd.DataFrame, matrix):
-    plt.plot(data.index.values, data[matrix])
-    plt.show()
 
-if __name__ == "__main__":
-    data = get_company_growth('aapl')
-    plot_data('aapl', data, "Asset Growth")

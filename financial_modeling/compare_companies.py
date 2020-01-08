@@ -1,0 +1,1 @@
+# compare several companies with a single matrix.
