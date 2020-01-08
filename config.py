@@ -7,7 +7,7 @@ class Configurations:
                                           'company-key-metrics', 'financial-statement-growth', 'company/rating']
      
     class DB:
-        IP = "http://172.19.0.4"  # pushgateway
+        IP = "http://pushgateway"  # pushgateway
         PUSH_GATEWAY = "9091"
 
     class DEV_DB:
