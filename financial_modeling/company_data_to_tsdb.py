@@ -1,3 +1,4 @@
+#%%
 from config import Configurations
 import json
 import requests
@@ -7,7 +8,9 @@ from typing import Mapping
 from financial_modeling.company_figures import CompanyFigures
 from collections import defaultdict
 import os
-
+import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
 
 def gauge_dict():
     g_dict = defaultdict(lambda: "see gauge name")
@@ -85,7 +88,7 @@ def min_index(data):
                len(data['financial-statement-growth']['growth']), len(data['enterprise-value']['enterpriseValues']), len(data['financial-ratios']['ratios']))
 
 def new_data(last_ts):
-    return False
+    return True
 
 def new_company(symbol: str):
     compnay_folder = os.path.join(os.path.abspath(__file__), "timestamp") 
@@ -147,7 +150,7 @@ def add_data(report: str, data: dict, figures: CompanyFigures, index: int = 0):
 
 
 
-def generate_data(symbol:str, data: dict, index: int=0):
+def generate_tsdb_data(symbol:str, data: dict, index: int=0):
     # TODO in Python 3.7, the order of insertion to dictionary is maintained, so it is possible to use a position index to get the symbol
     # so don't need the hardcoded dictionary key.
     # https://stackoverflow.com/questions/30362391/how-do-you-find-the-first-key-in-a-dictionary/39292086
@@ -157,25 +160,62 @@ def generate_data(symbol:str, data: dict, index: int=0):
     return figures
 
 def company_data_to_tsdb():
+    # Push the data to TSDB.  Only push the latest data into TSDB.  To analysis the history data, use python code instead 
+    # Args:
     symbols = get_symbol_list()
     symbols = ['aapl', 'msft', 'fds']
     for symbol in symbols:
         f_data = get_data(symbol)
-        last_ts = last_timestamp(f_data)
-        min_ind = min_index(f_data)
+        figures = generate_tsdb_data(symbol, f_data, 0)
+        push_figures_to_db(figures)
 
-        nc = new_company(symbol)
-        nd = new_data(last_timestamp)
 
-        if nc:
-            company_file = os.path.join(os.path.abspath(__file__), "timestamp", ) 
-            with open(company_file, 'w') as f:
-                f.write(last_ts)
 
-        if nc or nd:
-            for i in range(min_ind): 
-                figures = generate_data(symbol, f_data, i)
-                push_figures_to_db(figures)
-                if nd and i == 0:
-                    break
+def get_company_growth(symbol):
+    growth_report = Configurations.Endpoints.finanical_modeling[6]
+    data = get_remote_data(symbol, growth_report)
+    growth_data = pd.DataFrame()
+    company_growth = {}
+    company_growth["Date"] = []
+    company_growth["Gross Profit Growth"] = []
+    company_growth["EBIT Growth"] = []
+    company_growth["Operating Income Growth"] = []
+    company_growth["Net Income Growth"] = []
+    company_growth["EPS Growth"] = []
+    company_growth["Dividends per Share Growth"] = []
+    company_growth["Operating Cash Flow growth"] = []
+    company_growth["Free Cash Flow growth"] = []
+    company_growth["Receivables growth"] = []
+    company_growth["Asset Growth"] = []
+    company_growth["Book Value per Share Growth"] = []
+    company_growth["Debt Growth"] = []
+    company_growth["R&D Expense Growth"] = []
+    company_growth["SG&A Expenses Growth"] = []
 
+    for d in data["growth"]:
+        company_growth["Date"].append(d["date"])
+        company_growth["Gross Profit Growth"].append(float(d["Gross Profit Growth"])) 
+        company_growth["EBIT Growth"].append(float(d["EBIT Growth"]))
+        company_growth["Operating Income Growth"].append(float(d["Operating Income Growth"]))
+        company_growth["Net Income Growth"].append(float(d["Net Income Growth"]))
+        company_growth["EPS Growth"].append(float(d["EPS Growth"]))
+        company_growth["Dividends per Share Growth"].append(float(d["Dividends per Share Growth"]))
+        company_growth["Operating Cash Flow growth"].append(float(d["Operating Cash Flow growth"]))
+        company_growth["Free Cash Flow growth"].append(float(d["Free Cash Flow growth"]))
+        company_growth["Receivables growth"].append(float(d["Receivables growth"]))
+        company_growth["Asset Growth"].append(float(d["Asset Growth"]))
+        company_growth["Book Value per Share Growth"].append(float(d["Book Value per Share Growth"]))
+        company_growth["Debt Growth"].append(float(d["Debt Growth"]))
+        company_growth["R&D Expense Growth"].append(float(d["R&D Expense Growth"]))
+        company_growth["SG&A Expenses Growth"].append(float(d["SG&A Expenses Growth"]))
+    company_growth_data = pd.DataFrame.from_dict(company_growth)
+    company_growth_data.set_index("Date", inplace=True)
+    return company_growth_data
+
+def plot_data(symbol, data: pd.DataFrame, matrix):
+    plt.plot(data.index.values, data[matrix])
+    plt.show()
+
+if __name__ == "__main__":
+    data = get_company_growth('aapl')
+    plot_data('aapl', data, "Asset Growth")
