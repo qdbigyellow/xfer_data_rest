@@ -1,3 +1,6 @@
 Flask
 prometheus_client
 requests
+pandas
+numpy
+matplotlib
