@@ -73,7 +73,8 @@ def get_symbol(symbol_element) -> float:
         print(f"The number {number} is not mapped to text {text} anymore")
         return 127.0
 
-if __name__ == "__main__":
+
+def yr_to_tsdb():
     xml_data = get_yr_data(Configurations.Endpoints.yr_weather)
     data = reformat_xml_data(xml_data)
     forecast_to_tsdb(data)
