@@ -37,7 +37,7 @@ jobs:
         
   merge-branch:
     runs-on: ubuntu-latest
-    if: build.success()
+    if: success()
     steps:
       - uses: actions/checkout@master
       - name: Merge to release branch
