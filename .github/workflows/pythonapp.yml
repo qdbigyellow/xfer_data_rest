@@ -6,7 +6,8 @@ on:
       - '**/Readme.md'
       - '**/.gitignore'
       - '.github/**'
-
+    branches: 'master'
+      
 jobs:
   build:
 
@@ -33,3 +34,15 @@ jobs:
       run: |
         pip install pytest
         pytest
+        
+  merge-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Merge to release branch
+        uses: devmasx/merge-branch@v1.1.0
+        with:
+          type: now
+          target_branch: 'release'
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
