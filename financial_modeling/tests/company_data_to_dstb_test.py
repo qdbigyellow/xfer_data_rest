@@ -1,5 +1,5 @@
 class TestCompanyDataToDSTB:
     def test_pass(self):
         assert True
-    def test_faile(self)
+    def test_fail(self):
         assert False
