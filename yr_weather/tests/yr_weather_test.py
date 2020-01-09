@@ -1,3 +1,3 @@
-class YrWeatherTests:
+class TestYrWeather:
     def test_pass(self):
         assert True
