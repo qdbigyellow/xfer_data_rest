@@ -64,13 +64,13 @@ def get_symbol(symbol_element) -> float:
     num = symbol_element.attrib['numberEx']
     text = symbol_element.attrib['name']
     if not (num in symbol_dict.keys()):
-        print(f"The number {number} is unknown")
+        print(f"The number {num} is unknown")
         return 127.0
 
     if symbol_dict[num].lower() == text.lower():
         return float(num)
     else: 
-        print(f"The number {number} is not mapped to text {text} anymore")
+        print(f"The number {num} is not mapped to text {text} anymore")
         return 127.0
 
 
