@@ -35,15 +35,12 @@ jobs:
         pip install pytest
         pytest
         
-  merge-branch:
-    runs-on: ubuntu-latest
-    if: success()
-    steps:
-      - uses: actions/checkout@master
-      - name: Merge to release branch
-        uses: devmasx/merge-branch@v1.1.0
-        with:
-          type: now
-          target_branch: 'release'
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    - name: Merge to release branch
+      if: success()
+      uses: devmasx/merge-branch@v1.1.0
+      with:
+        type: now
+        target_branch: 'release'
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      
