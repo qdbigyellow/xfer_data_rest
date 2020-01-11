@@ -11,6 +11,7 @@ import os
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
+from dataclasses import dataclass
 
 def gauge_dict():
     g_dict = defaultdict(lambda: "see gauge name")
@@ -104,41 +105,43 @@ def add_data(report: str, data: dict, figures: CompanyFigures, index: int = 0):
     Returns:
         A CompanyFigures object with data
     """
+    symbol_keys = SupportKeys()
+    # TODO:  the path depends on the matrix,  so no need for check report name
     try:
         if report == 'financial-statement-growth':
             if index < len(data['growth']):
                 figures.date = data['growth'][index]["date"]
-                figures.gross_profit_growth = float(data['growth'][index]["Gross Profit Growth"])
-                figures.ebit_growth = float(data['growth'][index]["EBIT Growth"])
-                figures.operating_income_growth = float(data['growth'][index]["Operating Income Growth"])
-                figures.net_income_growth = float(data['growth'][index]["Net Income Growth"])
-                figures.eps_growth = float(data['growth'][index]["EPS Growth"])
-                figures.eps_diluted_growth = float(data['growth'][index]["EPS Diluted Growth"])
-                figures.weighted_average_shares_growth = float(data['growth'][index]["Weighted Average Shares Growth"])
-                figures.weighted_average_shares_diluted_growth = float(data['growth'][index]["Weighted Average Shares Diluted Growth"])
-                figures.divident_per_share_growth = float(data['growth'][index]["Dividends per Share Growth"])
-                figures.operating_cash_flow_growth = float(data['growth'][index]["Operating Cash Flow growth"])
-                figures.free_cash_flow_growth = float(data['growth'][index]["Free Cash Flow growth"])
-                figures.receivables_growth = float(data['growth'][index]["Receivables growth"])
-                figures.inventory_growth = float(data['growth'][index]["Inventory Growth"])
-                figures.asset_growth = float(data['growth'][index]["Asset Growth"])
-                figures.book_value_per_share_growth = float(data['growth'][index]["Book Value per Share Growth"])
-                figures.debt_growth = float(data['growth'][index]["Debt Growth"])
-                figures.rd_expense_growth = float(data['growth'][index]["R&D Expense Growth"])
-                figures.sga_expense_growth = float(data['growth'][index]["SG&A Expenses Growth"])
+                figures.gross_profit_growth = float(data['growth'][index][symbol_keys.gross_profit_growth.value])
+                figures.ebit_growth = float(data['growth'][index][symbol_keys.ebit_growth.value])
+                figures.operating_income_growth = float(data['growth'][index][symbol_keys.operating_income_growth.value])
+                figures.net_income_growth = float(data['growth'][index][symbol_keys.net_income_growth.value])
+                figures.eps_growth = float(data['growth'][index][symbol_keys.eps_growth.value])
+                figures.eps_diluted_growth = float(data['growth'][index][symbol_keys.eps_diluted_growth.value])
+                figures.weighted_average_shares_growth = float(data['growth'][index][symbol_keys.weighted_average_shares_growth])
+                figures.weighted_average_shares_diluted_growth = float(data['growth'][index][symbol_keys.weighted_average_shares_diluted_growth.value])
+                figures.divident_per_share_growth = float(data['growth'][index][symbol_keys.divident_per_share_growth.value])
+                figures.operating_cash_flow_growth = float(data['growth'][index][symbol_keys.operating_cash_flow_growth.value])
+                figures.free_cash_flow_growth = float(data['growth'][index][symbol_keys.free_cash_flow_growth.value])
+                figures.receivables_growth = float(data['growth'][index][symbol_keys.receivables_growth.value])
+                figures.inventory_growth = float(data['growth'][index][symbol_keys.inventory_growth.value])
+                figures.asset_growth = float(data['growth'][index][symbol_keys.asset_growth.value])
+                figures.book_value_per_share_growth = float(data['growth'][index][symbol_keys.book_value_per_share_growth.value])
+                figures.debt_growth = float(data['growth'][index][symbol_keys.debt_growth.value])
+                figures.rd_expense_growth = float(data['growth'][index][symbol_keys.rd_expense_growth.value])
+                figures.sga_expense_growth = float(data['growth'][index][symbol_keys.sga_expense_growth.value])
         elif report == 'financials/income-statement':
             if index < len(data['financials']):
-                figures.ops_expense_to_income_ratio = float(data['financials'][index]["Operating Expenses"])/float(data['financials'][index]["Operating Income"])
+                figures.ops_expense_to_income_ratio = float(data['financials'][index][symbol_keys.operating_expense.value])/float(data['financials'][index][symbol_keys.operating_income.value])
                 if len(data) > index + 1:
-                    figures.ops_expense_growth = float(data['financials'][index]["Operating Expenses"]) / float(data['financials'][index+1]["Operating Expenses"])
+                    figures.ops_expense_growth = float(data['financials'][index][symbol_keys.operating_expense.value]) / float(data['financials'][index+1][symbol_keys.operating_expense.value])
         elif report == 'financials/balance-sheet-statement':
             if index < len(data['financials']):
-                figures.short_term_debt_to_total_ratio = float(data['financials'][index]['Short-term debt']) / float(data['financials'][index]['Total debt'])
-                figures.asset_to_liability_ratio = float(data['financials'][index]['Total assets']) / float(data['financials'][index]['Total liabilities'])
+                figures.short_term_debt_to_total_ratio = float(data['financials'][index][symbol_keys.shortterm_debt.value]) / float(data['financials'][index][symbol_keys.total_debt.value])
+                figures.asset_to_liability_ratio = float(data['financials'][index][symbol_keys.total_asset.value]) / float(data['financials'][index][symbol_keys.total_liabilities.value])
         elif report == 'company-key-metrics':
             if index < len(data['metrics']):
-                figures.pe_ratio = float(data['metrics'][index]["PE ratio"])
-                figures.pb_ratio = float(data['metrics'][index]["PTB ratio"])
+                figures.pe_ratio = float(data['metrics'][index][symbol_keys.pe_ratio.value])
+                figures.pb_ratio = float(data['metrics'][index][symbol_keys.pb_ratio.value])
         elif report == 'company/rating':
             rating_details = []
             for r, w in data['ratingDetails'].items():
@@ -166,49 +169,89 @@ def company_data_to_tsdb():
     for symbol in symbols:
         f_data = get_data(symbol)
         figures = generate_tsdb_data(symbol, f_data, 0)
-        push_figures_to_db(figures)
+        # push_figures_to_db(figures)
+        print(figures)
 
 
 
 def get_company_growth(symbol):
+    symbol_keys = SupportKeys()
     growth_report = Configurations.Endpoints.finanical_modeling[6]
     data = get_remote_data(symbol, growth_report)
     growth_data = pd.DataFrame()
     company_growth = {}
     company_growth["Date"] = []
-    company_growth["Gross Profit Growth"] = []
-    company_growth["EBIT Growth"] = []
-    company_growth["Operating Income Growth"] = []
-    company_growth["Net Income Growth"] = []
-    company_growth["EPS Growth"] = []
-    company_growth["Dividends per Share Growth"] = []
-    company_growth["Operating Cash Flow growth"] = []
-    company_growth["Free Cash Flow growth"] = []
-    company_growth["Receivables growth"] = []
-    company_growth["Asset Growth"] = []
-    company_growth["Book Value per Share Growth"] = []
-    company_growth["Debt Growth"] = []
-    company_growth["R&D Expense Growth"] = []
-    company_growth["SG&A Expenses Growth"] = []
+    company_growth[symbol_keys.gross_profit_growth.value] = []
+    company_growth[symbol_keys.ebit_growth.value] = []
+    company_growth[symbol_keys.operating_income_growth.value] = []
+    company_growth[symbol_keys.net_income_growth.value] = []
+    company_growth[symbol_keys.eps_growth.value] = []
+    company_growth[symbol_keys.divident_per_share_growth.value] = []
+    company_growth[symbol_keys.operating_cash_flow_growth.value] = []
+    company_growth[symbol_keys.free_cash_flow_growth.value] = []
+    company_growth[symbol_keys.receivables_growth.value] = []
+    company_growth[symbol_keys.asset_growth.value] = []
+    company_growth[symbol_keys.book_value_per_share_growth.value] = []
+    company_growth[symbol_keys.debt_growth.value] = []
+    company_growth[symbol_keys.rd_expense_growth.value] = []
+    company_growth[symbol_keys.sga_expense_growth.value] = []
 
     for d in data["growth"]:
         company_growth["Date"].append(d["date"])
-        company_growth["Gross Profit Growth"].append(float(d["Gross Profit Growth"])) 
-        company_growth["EBIT Growth"].append(float(d["EBIT Growth"]))
-        company_growth["Operating Income Growth"].append(float(d["Operating Income Growth"]))
-        company_growth["Net Income Growth"].append(float(d["Net Income Growth"]))
-        company_growth["EPS Growth"].append(float(d["EPS Growth"]))
-        company_growth["Dividends per Share Growth"].append(float(d["Dividends per Share Growth"]))
-        company_growth["Operating Cash Flow growth"].append(float(d["Operating Cash Flow growth"]))
-        company_growth["Free Cash Flow growth"].append(float(d["Free Cash Flow growth"]))
-        company_growth["Receivables growth"].append(float(d["Receivables growth"]))
-        company_growth["Asset Growth"].append(float(d["Asset Growth"]))
-        company_growth["Book Value per Share Growth"].append(float(d["Book Value per Share Growth"]))
-        company_growth["Debt Growth"].append(float(d["Debt Growth"]))
-        company_growth["R&D Expense Growth"].append(float(d["R&D Expense Growth"]))
-        company_growth["SG&A Expenses Growth"].append(float(d["SG&A Expenses Growth"]))
+        company_growth[symbol_keys.gross_profit_growth.value].append(float(d[symbol_keys.gross_profit_growth.value])) 
+        company_growth[symbol_keys.ebit_growth.value].append(float(d[symbol_keys.ebit_growth.value]))
+        company_growth[symbol_keys.operating_income_growth.value].append(float(d[symbol_keys.operating_income_growth.value]))
+        company_growth[symbol_keys.net_income_growth.value].append(float(d[symbol_keys.net_income_growth.value]))
+        company_growth[symbol_keys.eps_growth.value].append(float(d[symbol_keys.eps_growth.value]))
+        company_growth[symbol_keys.divident_per_share_growth.value].append(float(d[symbol_keys.divident_per_share_growth.value]))
+        company_growth[symbol_keys.operating_cash_flow_growth.value].append(float(d[symbol_keys.operating_cash_flow_growth.value]))
+        company_growth[symbol_keys.free_cash_flow_growth.value].append(float(d[symbol_keys.free_cash_flow_growth.value]))
+        company_growth[symbol_keys.receivables_growth.value].append(float(d[symbol_keys.receivables_growth.value]))
+        company_growth[symbol_keys.asset_growth.value].append(float(d[symbol_keys.asset_growth.value]))
+        company_growth[symbol_keys.book_value_per_share_growth.value].append(float(d[symbol_keys.book_value_per_share_growth.value]))
+        company_growth[symbol_keys.debt_growth.value].append(float(d[symbol_keys.debt_growth.value]))
+        company_growth[symbol_keys.rd_expense_growth.value].append(float(d[symbol_keys.rd_expense_growth.value]))
+        company_growth[symbol_keys.sga_expense_growth.value].append(float(d[symbol_keys.sga_expense_growth.value]))
     company_growth_data = pd.DataFrame.from_dict(company_growth)
     company_growth_data.set_index("Date", inplace=True)
     return company_growth_data
 
+@dataclass
+class Keys:
+    report: str
+    path: str
+    value: str
 
+class SupportKeys:
+    date = Keys('financial-statement-growth', 'growth', "date")
+    gross_profit_growth = Keys('financial-statement-growth', 'growth', "Gross Profit Growth")
+    ebit_growth = Keys('financial-statement-growth', 'growth', "EBIT Growth")
+    operating_income_growth = Keys('financial-statement-growth', 'growth', "Operating Income Growth")
+    net_income_growth = Keys('financial-statement-growth', 'growth', "Net Income Growth")
+    eps_growth = Keys('financial-statement-growth', 'growth', "EPS Growth")
+    eps_diluted_growth = Keys('financial-statement-growth', 'growth', "EPS Diluted Growth")
+    weighted_average_shares_growth = Keys('financial-statement-growth', 'growth', "Weighted Average Shares Growth")
+    weighted_average_shares_diluted_growth = Keys('financial-statement-growth', 'growth', "Weighted Average Shares Diluted Growth")
+    divident_per_share_growth = Keys('financial-statement-growth', 'growth', "Dividends per Share Growth")
+    operating_cash_flow_growth = Keys('financial-statement-growth', 'growth', "Operating Cash Flow growth")
+    free_cash_flow_growth = Keys('financial-statement-growth', 'growth', "Free Cash Flow growth")
+    receivables_growth = Keys('financial-statement-growth', 'growth', "Receivables growth")
+    inventory_growth = Keys('financial-statement-growth', 'growth', "Inventory Growth")
+    asset_growth = Keys('financial-statement-growth', 'growth', "Asset Growth")
+    book_value_per_share_growth = Keys('financial-statement-growth', 'growth', "Book Value per Share Growth")
+    debt_growth = Keys('financial-statement-growth', 'growth', "Debt Growth")
+    rd_expense_growth = Keys('financial-statement-growth', 'growth', "R&D Expense Growth")
+    sga_expense_growth = Keys('financial-statement-growth', 'growth', "SG&A Expenses Growth")
+    operating_expense = Keys('financials/income-statement', 'financials', "Operating Expenses")
+    operating_income = Keys('financials/income-statement', 'financials', "Operating Income")
+
+    shortterm_debt = Keys('financials/balance-sheet-statement', 'financials', "Short-term debt")
+    total_debt = Keys('financials/balance-sheet-statement', 'financials', "Total debt")
+    total_asset = Keys('financials/income-statement', 'financials', "Total assets")
+    total_liabilities = Keys('financials/income-statement', 'financials', "Total liabilities")
+    pe_ratio = Keys('company-key-metrics', 'financials', "PE ratio")
+    pb_ratio = Keys('company-key-metrics', 'financials', "PTB ratio")
+    rating = Keys('rating', 'rating', "score")    
+
+if __name__ == "__main__":
+    company_data_to_tsdb()
