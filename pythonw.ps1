@@ -1,0 +1,1 @@
+docker run --rm -v d:\dev\xfer_data_rest:c:\app dashboard_win python c:\app\$args

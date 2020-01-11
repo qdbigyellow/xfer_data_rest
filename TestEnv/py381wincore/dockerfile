@@ -1,0 +1,6 @@
+FROM python:3.8.1-windowsservercore
+RUN mkdir c:\app
+COPY ./requirements.txt c:\\app
+WORKDIR c:\\app
+ENV PYTHONPATH "c:\\app:$PYTHONPATH"
+RUN pip install -r requirements.txt
