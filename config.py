@@ -17,4 +17,4 @@ class Configurations:
 
     class YR_Bashboard:
         lines = 4
-        job_name = "YR weather"
+        job_name = "YR_weather"
