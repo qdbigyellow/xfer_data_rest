@@ -17,14 +17,22 @@ def fetch_data():
 
 def process_loan_rate_data(data):
     for loan in data:
+        name = "nordea_loan"
         rate = loan["rate"].replace("*&nbsp;", "").replace(",", ".")
         afdragsfri = loan["repaymentFreedomMax"]
-        name = "loan_" + loan["fundName"].replace(" ", "_").replace(",", "_").replace("%", "_").replace("__", "_").lower()        
+        loan_type = "loan_" + loan["fundName"].replace(" ", "_").replace(",", "_").replace("%", "_").replace("__", "_").lower()        
+        labels = {
+            "loan_type": loan_type
+        }
+        grouping_key = {
+            "job": name,            
+            "loan_type": loan_type
+        }
         period = loan["loanPeriodMax"]
         print(f"matrics {name}")
 
         if float(rate) < 100 and afdragsfri.lower() == "nej":
-            push_data_to_gateway(job_name=name, gauge_name="nordea_loan_rate", gauge_detail=period, data=rate)
+            push_data_to_gateway(job_name=name, gauge_name="nordea_loan_rate", gauge_detail=period, data=rate, labels=labels, grouping_key=grouping_key, pushadd=True)
 
 def replace_non_alphanumeric(data):
     pattern= re.compile(r'\W+')

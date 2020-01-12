@@ -27,8 +27,20 @@ def get_remote_data(symbol: str, report: str, period: str ='quarter'):
     jdata = resp.json()
     return jdata
 
-def get_symbol_list():
-    url = 'https://financialmodelingprep.com/api/v3/company/stock/list'
+def get_symbol_list(symbol_file):
+    if os.path.exists(symbol_file):
+        return get_local_symbol_list(symbol_file)
+    else:
+        return get_remote_symbol_list()
+
+def get_local_symbol_list(symbol_file):
+    with open(symbol_file, 'r') as f:
+        data = json.load(f)
+        return data["symbols"]
+
+def get_remote_symbol_list(url=None):
+    if url is None:
+        url = 'https://financialmodelingprep.com/api/v3/company/stock/list' 
     resp = requests.get(url)
     jdata = resp.json()
     symbol_list = [j['symbol'] for j in jdata['symbolsList']]
@@ -161,17 +173,18 @@ def generate_tsdb_data(symbol:str, data: dict, index: int=0):
         add_data(k, v, figures, index)
     return figures
 
-def company_data_to_tsdb():
+def company_data_to_tsdb(symbols=None):
     # Push the data to TSDB.  Only push the latest data into TSDB.  To analysis the history data, use python code instead 
     # Args:
-    symbols = get_symbol_list()
-    symbols = ['aapl', 'msft', 'fds']
+    if symbols is None:
+        current_folder = os.path.abspath(__file__)
+        symbol_file = os.path.join(current_folder, 'tsdb_symbols.json')
+        symbols = get_symbol_list(symbol_file)
+
     for symbol in symbols:
         f_data = get_data(symbol)
         figures = generate_tsdb_data(symbol, f_data, 0)
-        # push_figures_to_db(figures)
-        print(figures)
-
+        push_figures_to_db(figures)
 
 
 def get_company_growth(symbol):

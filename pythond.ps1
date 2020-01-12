@@ -1,1 +1,1 @@
-docker run --rm -v d:\dev\xfer_data_rest:/app dashboard_linux python /app/$args
+docker run --name python_linux --rm -p 5000:5000 -v d:\dev\xfer_data_rest:/app dashboard_linux python /app/$args
