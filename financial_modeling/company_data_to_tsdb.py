@@ -31,7 +31,8 @@ def get_symbol_list(symbol_file):
     if os.path.exists(symbol_file):
         return get_local_symbol_list(symbol_file)
     else:
-        return get_remote_symbol_list()
+        # return get_remote_symbol_list()
+        return ['fds', 'SPGI']
 
 def get_local_symbol_list(symbol_file):
     with open(symbol_file, 'r') as f:
