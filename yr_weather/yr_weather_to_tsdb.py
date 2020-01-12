@@ -33,11 +33,11 @@ def forecast_to_tsdb(foracast_list):
     for i in range(Configurations.YR_Bashboard.lines):
         labels = {
             'place': Configurations.Endpoints.yr_weather[0].replace('/', '_'),
-            'hours': f"+{str(i)}"
+            'hours': f"next_{str(i)}"
         }
         grouping_key = {
             'job': Configurations.YR_Bashboard.job_name, 
-            'hours': f"+{str(i)}"
+            'hours': f"next_{str(i)}"
         }
         for gauge, value in foracast_list[i].items():
             push_data_to_gateway(job_name=job_name, gauge_name=gauge, gauge_detail="see gauge name", data=value, labels=labels, grouping_key=grouping_key, pushadd=True)
