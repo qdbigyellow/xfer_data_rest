@@ -263,8 +263,8 @@ class SupportKeys:
     total_debt = Keys('financials/balance-sheet-statement', 'financials', "Total debt")
     total_asset = Keys('financials/income-statement', 'financials', "Total assets")
     total_liabilities = Keys('financials/income-statement', 'financials', "Total liabilities")
-    pe_ratio = Keys('company-key-metrics', 'financials', "PE ratio")
-    pb_ratio = Keys('company-key-metrics', 'financials', "PTB ratio")
+    pe_ratio = Keys('company-key-metrics', 'metrics', "PE ratio")
+    pb_ratio = Keys('company-key-metrics', 'metrics', "PTB ratio")
     rating = Keys('rating', 'rating', "score")    
 
 if __name__ == "__main__":
