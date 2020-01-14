@@ -13,6 +13,8 @@ if [ $LOCAL = $REMOTE ]; then
 elif [ $LOCAL = $BASE ]; then
     echo "Need to pull"
     git pull --rebase
+    docker cp requirements.txt app:/app
+    docker exec -d app pip install -r requirements.txt
     docker restart app
 elif [ $REMOTE = $BASE ]; then
     echo "Need to push"
