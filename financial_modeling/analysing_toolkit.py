@@ -107,6 +107,7 @@ async def download_all_sites(sites):
         return await asyncio.gather(*tasks, return_exceptions=True)
 
 async def download_site(session, symbol, index=0):
+    print(symbol)
     url = f'https://financialmodelingprep.com/api/v3/company-key-metrics/{symbol}?period=quarter'
     async with session.get(url) as response:
         key_metrics = await response.json()
@@ -117,7 +118,6 @@ async def download_site(session, symbol, index=0):
 
     pb_ratio = 0.0
     pe_ratio = 0.0
-    print(len(key_metrics))
     if len(key_metrics) > 0:
         pb_ratio = float(key_metrics[SupportKeys.pb_ratio.path][index][SupportKeys.pb_ratio.value]) if key_metrics[SupportKeys.pb_ratio.path][index][SupportKeys.pb_ratio.value] is not "" else 0.0
         pe_ratio = float(key_metrics[SupportKeys.pe_ratio.path][index][SupportKeys.pe_ratio.value]) if key_metrics[SupportKeys.pe_ratio.path][index][SupportKeys.pe_ratio.value] is not "" else 0.0
@@ -135,7 +135,6 @@ async def download_site(session, symbol, index=0):
                             port = "5432",
                             database = "homeauto")
     cursor = connection.cursor()
-    print(connection.get_dsn_parameters(),"\n")
 
     pg_insert_query = """INSERT INTO public.financial_matrix ("symbol", "EPS_Growth", "FCF_Growth", "PB_Ratio", "PE_Ratio", "EBIT_Growth") VALUES (%s,%s,%s,%s,%s,%s)
        ON CONFLICT ("symbol")
@@ -152,10 +151,6 @@ async def download_site(session, symbol, index=0):
     connection.commit()
     cursor.close()
     connection.close()
-
-
-
-
 
 #%%
 
