@@ -7,3 +7,5 @@ matplotlib
 lxml
 pytest
 click
+aiohttp
+psycopg2

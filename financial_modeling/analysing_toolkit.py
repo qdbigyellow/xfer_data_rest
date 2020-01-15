@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import click 
 from os import path
+import asyncio
+import time
+import aiohttp
+import psycopg2
 
 PROFIT_LIST = [
     'Gross Profit Growth',
@@ -81,47 +85,73 @@ available_matrix = [SupportKeys.pb_ratio, SupportKeys.pe_ratio, SupportKeys.ebit
 @click.option('-m', '--matrix', type=str, help="Matrix name", required=True)
 @click.option('-u', '--update-datasource', type=bool, help="Update the datasource file", default=False,  required=False)
 def find(matrix, update_datasource=False, number=20, sort='desc'):
-    dest = path.join(path.abspath(__file__), 'all_company_matrix.csv')
-    if not path.exists(dest) or update_datasource is True : 
-        data_source = get_metrics_all_company(to_csv=True)
-    else:
-        data_source = pd.read_csv(dest)
-    data = data_source[matrix]
+    #TODO: Get data from database, and sort in database instead here. 
     print(data)
 
-def get_metrics_all_company(to_csv=True, index=0):
-    symbols = get_remote_symbol_list()
-    data_dict = {}
-    for s in symbols:
-        data_list = []
-        key_metrics = get_remote_data(symbol=s, report='company-key-metrics')
-        if len(key_metrics) < 1 :
-            continue
 
-        growth = get_remote_data(symbol=s, report='financial-statement-growth')
-        if len(growth) < 1:
-            continue
-        
-        print(s)
-        print(key_metrics[SupportKeys.pb_ratio.path][index][SupportKeys.pb_ratio.value])
-        data_list.append(float(key_metrics[SupportKeys.pb_ratio.path][index][SupportKeys.pb_ratio.value]) if key_metrics[SupportKeys.pb_ratio.path][index][SupportKeys.pb_ratio.value] is not "" else 0.0)
-        print(key_metrics[SupportKeys.pe_ratio.path][index][SupportKeys.pe_ratio.value])
-        data_list.append(float(key_metrics[SupportKeys.pe_ratio.path][index][SupportKeys.pe_ratio.value]) if key_metrics[SupportKeys.pe_ratio.path][index][SupportKeys.pe_ratio.value] is not "" else 0.0)
-        print(growth[SupportKeys.ebit_growth.path][index][SupportKeys.ebit_growth.value])
-        data_list.append(float(growth[SupportKeys.ebit_growth.path][index][SupportKeys.ebit_growth.value]) if growth[SupportKeys.ebit_growth.path][index][SupportKeys.ebit_growth.value] is not "" else 0.0)
-        print(growth[SupportKeys.eps_growth.path][index][SupportKeys.eps_growth.value])
-        data_list.append(float(growth[SupportKeys.eps_growth.path][index][SupportKeys.eps_growth.value]) if growth[SupportKeys.eps_growth.path][index][SupportKeys.eps_growth.value] is not "" else 0.0)
-        print(growth[SupportKeys.free_cash_flow_growth.path][index][SupportKeys.free_cash_flow_growth.value])
-        data_list.append(float(growth[SupportKeys.free_cash_flow_growth.path][index][SupportKeys.free_cash_flow_growth.value]) if growth[SupportKeys.free_cash_flow_growth.path][index][SupportKeys.free_cash_flow_growth.value] is not "" else 0.0)
-        data_dict[s] = data_list
-    data = pd.DataFrame.from_dict(data_dict, orient='index',columns=['PB Ratio', 'PE Ratio', 'EBIT Growth', 'EPS Growth', 'Cashflow Growth'])
-    if to_csv:
-        dest = path.join(path.dirname(__file__), 'all_company_matrix.csv')
-        data.to_csv(dest)
-    return data
+@main.command('dbextract')
+def dbextract():
+    sites = get_remote_symbol_list()
+    start_time = time.time()
+    a = asyncio.get_event_loop().run_until_complete(download_all_sites(sites))
+    duration = time.time() - start_time
+    print(f"Downloaded {len(sites)} sites in {duration} seconds")
 
 
+async def download_all_sites(sites):
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for symbol in sites:
+            task = asyncio.ensure_future(download_site(session, symbol))
+            tasks.append(task)
+        return await asyncio.gather(*tasks, return_exceptions=True)
 
+async def download_site(session, symbol, index=0):
+    url = f'https://financialmodelingprep.com/api/v3/company-key-metrics/{symbol}?period=quarter'
+    async with session.get(url) as response:
+        key_metrics = await response.json()
+
+    url = f'https://financialmodelingprep.com/api/v3/financial-statement-growth/{symbol}?period=quarter'
+    async with session.get(url) as response:
+        growth = await response.json()    
+
+    pb_ratio = 0.0
+    pe_ratio = 0.0
+    print(len(key_metrics))
+    if len(key_metrics) > 0:
+        pb_ratio = float(key_metrics[SupportKeys.pb_ratio.path][index][SupportKeys.pb_ratio.value]) if key_metrics[SupportKeys.pb_ratio.path][index][SupportKeys.pb_ratio.value] is not "" else 0.0
+        pe_ratio = float(key_metrics[SupportKeys.pe_ratio.path][index][SupportKeys.pe_ratio.value]) if key_metrics[SupportKeys.pe_ratio.path][index][SupportKeys.pe_ratio.value] is not "" else 0.0
+    eps_growth = 0.0    
+    ebit_growth = 0.0    
+    fcf_growth = 0.0    
+    if len(growth) > 0:
+        ebit_growth = float(growth[SupportKeys.ebit_growth.path][index][SupportKeys.ebit_growth.value]) if growth[SupportKeys.ebit_growth.path][index][SupportKeys.ebit_growth.value] is not "" else 0.0
+        eps_growth = float(growth[SupportKeys.eps_growth.path][index][SupportKeys.eps_growth.value]) if growth[SupportKeys.eps_growth.path][index][SupportKeys.eps_growth.value] is not "" else 0.0
+        fcf_growth = float(growth[SupportKeys.free_cash_flow_growth.path][index][SupportKeys.free_cash_flow_growth.value]) if growth[SupportKeys.free_cash_flow_growth.path][index][SupportKeys.free_cash_flow_growth.value] is not "" else 0.0
+
+    connection = psycopg2.connect(user = "autouser",
+                            password = "autouser",
+                            host = "192.168.0.6",
+                            port = "5432",
+                            database = "homeauto")
+    cursor = connection.cursor()
+    print(connection.get_dsn_parameters(),"\n")
+
+    pg_insert_query = """INSERT INTO public.financial_matrix ("symbol", "EPS_Growth", "FCF_Growth", "PB_Ratio", "PE_Ratio", "EBIT_Growth") VALUES (%s,%s,%s,%s,%s,%s)
+       ON CONFLICT ("symbol")
+       DO
+          UPDATE 
+          SET "EPS_Growth" = EXCLUDED."EPS_Growth",
+          "FCF_Growth" = EXCLUDED."FCF_Growth",
+          "PB_Ratio" = EXCLUDED."PB_Ratio",
+          "PE_Ratio" = EXCLUDED."PE_Ratio",
+          "EBIT_Growth" = EXCLUDED."EBIT_Growth";
+    """
+    record_to_insert = (symbol, eps_growth, fcf_growth, pb_ratio, pe_ratio, ebit_growth)
+    cursor.execute(pg_insert_query, record_to_insert)
+    connection.commit()
+    cursor.close()
+    connection.close()
 
 
 
