@@ -38,9 +38,9 @@ def plot_data(symbol, data: pd.DataFrame, matrix):
     plt.plot(data.index[::-1].values, data[matrix][::-1], label=matrix)
 
 
-def plot_datas(symbol, matrices):
+def plot_datas(symbol, metrics):
     data = get_company_growth(symbol)
-    for m in matrices:
+    for m in metrics:
         plot_data(symbol, data, m)
     plt.legend(loc="upper left")
     plt.show()
@@ -69,15 +69,15 @@ def main():
 
 @main.command(name='plot', help="plot the matrix on screen")
 @click.option('-s', '--symbols', type=str, help="The symbol of compaines to anaylisis", multiple=True)
-@click.option('-m', '--matrices', type=str, help="the matrices to plot. If more than one symbol is provided, maxmimun 1 matrix could be plot", multiple=True)
-def plot(symbols, matrices):
+@click.option('-m', '--metrics', type=str, help="the metrics to plot. If more than one symbol is provided, maxmimun 1 matrix could be plot", multiple=True)
+def plot(symbols, metrics):
     # as multiple=True, input is a SET type
     if len(symbols) > 1:
-        if len(matrices) > 1:
+        if len(metrics) > 1:
             quit()
-        cross_companies_compare(symbol, matrics)
+        cross_companies_compare(symbols, metrics)
     else:
-        plot_datas(symbols[0], list(matrices))
+        plot_datas(symbols[0], list(metrics))
 
 
 @main.command('dbextract')
@@ -129,10 +129,10 @@ async def download_financial_data(session, symbol, index=0):
     connection.close()
 
 
-def read_data(key_metrics, growth):
+def read_data(key_metrics, growth, index=0):
     pb_ratio = 0.0
     pe_ratio = 0.0
-    eps_growth = 0.0    
+    eps_growth = 0.0   
     ebit_growth = 0.0    
     fcf_growth = 0.0    
     if len(key_metrics) > 0:
