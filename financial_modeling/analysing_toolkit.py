@@ -136,12 +136,12 @@ def read_data(key_metrics, growth, index=0):
     ebit_growth = 0.0    
     fcf_growth = 0.0    
     if len(key_metrics) > 0:
-        pb_ratio = float(key_metrics[SupportKeys.pb_ratio.path][index][SupportKeys.pb_ratio.value]) if key_metrics[SupportKeys.pb_ratio.path][index][SupportKeys.pb_ratio.value] is not "" else 0.0
-        pe_ratio = float(key_metrics[SupportKeys.pe_ratio.path][index][SupportKeys.pe_ratio.value]) if key_metrics[SupportKeys.pe_ratio.path][index][SupportKeys.pe_ratio.value] is not "" else 0.0
+        pb_ratio = float(key_metrics[SupportKeys.pb_ratio.path][index][SupportKeys.pb_ratio.value]) if key_metrics[SupportKeys.pb_ratio.path][index][SupportKeys.pb_ratio.value] != "" else 0.0
+        pe_ratio = float(key_metrics[SupportKeys.pe_ratio.path][index][SupportKeys.pe_ratio.value]) if key_metrics[SupportKeys.pe_ratio.path][index][SupportKeys.pe_ratio.value] != "" else 0.0
     if len(growth) > 0:
-        ebit_growth = float(growth[SupportKeys.ebit_growth.path][index][SupportKeys.ebit_growth.value]) if growth[SupportKeys.ebit_growth.path][index][SupportKeys.ebit_growth.value] is not "" else 0.0
-        eps_growth = float(growth[SupportKeys.eps_growth.path][index][SupportKeys.eps_growth.value]) if growth[SupportKeys.eps_growth.path][index][SupportKeys.eps_growth.value] is not "" else 0.0
-        fcf_growth = float(growth[SupportKeys.free_cash_flow_growth.path][index][SupportKeys.free_cash_flow_growth.value]) if growth[SupportKeys.free_cash_flow_growth.path][index][SupportKeys.free_cash_flow_growth.value] is not "" else 0.0
+        ebit_growth = float(growth[SupportKeys.ebit_growth.path][index][SupportKeys.ebit_growth.value]) if growth[SupportKeys.ebit_growth.path][index][SupportKeys.ebit_growth.value] != "" else 0.0
+        eps_growth = float(growth[SupportKeys.eps_growth.path][index][SupportKeys.eps_growth.value]) if growth[SupportKeys.eps_growth.path][index][SupportKeys.eps_growth.value] != "" else 0.0
+        fcf_growth = float(growth[SupportKeys.free_cash_flow_growth.path][index][SupportKeys.free_cash_flow_growth.value]) if growth[SupportKeys.free_cash_flow_growth.path][index][SupportKeys.free_cash_flow_growth.value] != "" else 0.0
     return pb_ratio, pe_ratio, eps_growth, ebit_growth, fcf_growth
 
 #%%
