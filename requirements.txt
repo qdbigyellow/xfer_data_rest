@@ -8,4 +8,4 @@ lxml
 pytest
 click
 aiohttp
-psycopg2
+psycopg2-binary
