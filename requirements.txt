@@ -6,3 +6,6 @@ numpy
 matplotlib
 lxml
 pytest
+click
+aiohttp
+psycopg2-binary
