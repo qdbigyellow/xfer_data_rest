@@ -6,8 +6,17 @@ from lib.tsdb.prom import push_data_to_gateway
 from lib.pg_connector import conn, insert_query
 import os
 
-def get_yr_data(url):
-    location = Configurations.Endpoints.yr_weather[0]
+def get_yr_data(location):
+    """Download the YR weather from API
+    
+    Args:
+        location (str): the location to query. Need pull path.
+    
+    Returns:
+        etree XML: xml document
+    """
+    if location is None:
+        location = Configurations.Endpoints.yr_weather[0]
     url = f"https://www.yr.no/place/{location}/forecast_hour_by_hour.xml"
     resp = requests.get(url)
     xml_data = etree.XML(resp.content)
@@ -15,6 +24,10 @@ def get_yr_data(url):
 
 
 def forecast_to_pg(xml_data):
+    """
+    Parse the xml data, and transfer the data to postgresql DB
+    """
+
     place = Configurations.Endpoints.yr_weather[0].replace('/', '_')
     forecast_data = xml_data.xpath("//time")
     if len(forecast_data) > 0:
@@ -42,9 +55,17 @@ def forecast_to_pg(xml_data):
 
 
 def _xpath_search(xml_data, query):
+    """Search a XPATH query, and return the first element of query result
+    
+    Args:
+        xml_data (xml): xml document
+        query (str): xpath query
+    
+    Returns:
+        [xml]: Xpath query returns a list of matches.  Return the first element.
+    """
     res = xml_data.xpath(query)
-    if len(res) > 0:
-        return res[0]
+    return res[0] is len(res) > 0 else None
 
 def yr_to_pg():
     xml_data = get_yr_data(Configurations.Endpoints.yr_weather)
