@@ -12,36 +12,6 @@ def get_yr_data(url):
     xml_data = etree.XML(resp.content)
     return xml_data
 
-def reformat_xml_data(xml_data):
-    forecast_list: Sequence[Mapping[str, float]]  = []
-    forecast_data = xml_data.xpath("//time")
-    if len(forecast_data) > 0:
-        for hourly_data in forecast_data:
-            symbol = _xpath_search(hourly_data, "symbol")
-            temperature = _xpath_search(hourly_data, "temperature")
-            windspeed = _xpath_search(hourly_data, "windSpeed")
-            hourly_dict = {
-                symbol.tag: get_symbol(symbol),
-                temperature.tag: float(temperature.attrib['value']),
-                windspeed.tag: float(windspeed.attrib['mps'])
-            }
-            forecast_list.append(hourly_dict)
-    return forecast_list
-
-def forecast_to_tsdb(foracast_list):
-    job_name = Configurations.YR_Bashboard.job_name
-    for i in range(Configurations.YR_Bashboard.lines):
-        labels = {
-            'place': Configurations.Endpoints.yr_weather[0].replace('/', '_'),
-            'hours': f"next_{str(i)}"
-        }
-        grouping_key = {
-            'job': Configurations.YR_Bashboard.job_name, 
-            'hours': f"next_{str(i)}"
-        }
-        for gauge, value in foracast_list[i].items():
-            push_data_to_gateway(job_name=job_name, gauge_name=gauge, gauge_detail="see gauge name", data=value, labels=labels, grouping_key=grouping_key, pushadd=True)
-
 
 def forecast_to_pg(xml_data):
     place = Configurations.Endpoints.yr_weather[0].replace('/', '_')
@@ -74,6 +44,43 @@ def _xpath_search(xml_data, query):
     if len(res) > 0:
         return res[0]
 
+def yr_to_pg():
+    xml_data = get_yr_data(Configurations.Endpoints.yr_weather)
+    forecast_to_pg(xml_data)
+
+
+#TODO: Delete all the code below that push data to TSDB    
+def reformat_xml_data(xml_data):
+    forecast_list: Sequence[Mapping[str, float]]  = []
+    forecast_data = xml_data.xpath("//time")
+    if len(forecast_data) > 0:
+        for hourly_data in forecast_data:
+            symbol = _xpath_search(hourly_data, "symbol")
+            temperature = _xpath_search(hourly_data, "temperature")
+            windspeed = _xpath_search(hourly_data, "windSpeed")
+            hourly_dict = {
+                symbol.tag: get_symbol(symbol),
+                temperature.tag: float(temperature.attrib['value']),
+                windspeed.tag: float(windspeed.attrib['mps'])
+            }
+            forecast_list.append(hourly_dict)
+    return forecast_list
+
+def forecast_to_tsdb(foracast_list):
+    job_name = Configurations.YR_Bashboard.job_name
+    for i in range(Configurations.YR_Bashboard.lines):
+        labels = {
+            'place': Configurations.Endpoints.yr_weather[0].replace('/', '_'),
+            'hours': f"next_{str(i)}"
+        }
+        grouping_key = {
+            'job': Configurations.YR_Bashboard.job_name, 
+            'hours': f"next_{str(i)}"
+        }
+        for gauge, value in foracast_list[i].items():
+            push_data_to_gateway(job_name=job_name, gauge_name=gauge, gauge_detail="see gauge name", data=value, labels=labels, grouping_key=grouping_key, pushadd=True)
+
+
 def get_symbol(symbol_element) -> float:
     symbol_dict = {
         '1': 'Clear Sky',
@@ -101,9 +108,6 @@ def get_symbol(symbol_element) -> float:
 
 def yr_to_tsdb():
     xml_data = get_yr_data(Configurations.Endpoints.yr_weather)
-    # data = reformat_xml_data(xml_data)
-    # forecast_to_tsdb(data)
-    forecast_to_pg(xml_data)
+    data = reformat_xml_data(xml_data)
+    forecast_to_tsdb(data)
 
-if __name__ == "__main__":
-    yr_to_tsdb()
