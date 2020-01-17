@@ -15,6 +15,10 @@ ENV FLASK_ENV=development
 # For Python 3.6
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
+ENV PG_HOST postgresql
+ENV GRAFANA_HOST grafana
+ENV PROM_HOST prometheus
+ENV PROM_PUSHGATEWAY pushgateway
 
 ENTRYPOINT ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
 

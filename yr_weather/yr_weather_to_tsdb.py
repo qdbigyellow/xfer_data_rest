@@ -4,6 +4,7 @@ from lxml import etree
 from typing import Sequence, Mapping
 from lib.tsdb.prom import push_data_to_gateway
 from lib.pg_connector import conn, insert_query
+import os
 
 def get_yr_data(url):
     location = Configurations.Endpoints.yr_weather[0]
@@ -17,7 +18,8 @@ def forecast_to_pg(xml_data):
     place = Configurations.Endpoints.yr_weather[0].replace('/', '_')
     forecast_data = xml_data.xpath("//time")
     if len(forecast_data) > 0:
-        connection = conn()
+        db_ip = os.getenv("PG_HOST", "192.168.0.6")
+        connection = conn(host=db_ip)
         for i, hourly_data in enumerate(forecast_data): 
             if i < Configurations.YR_Bashboard.lines:
                 hours = f"next_{str(i)}"
