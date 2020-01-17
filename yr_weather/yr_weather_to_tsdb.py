@@ -3,7 +3,7 @@ from config import Configurations
 from lxml import etree
 from typing import Sequence, Mapping
 from lib.tsdb.prom import push_data_to_gateway
-
+from lib.pg_connector import conn, insert_query
 
 def get_yr_data(url):
     location = Configurations.Endpoints.yr_weather[0]
@@ -43,6 +43,31 @@ def forecast_to_tsdb(foracast_list):
             push_data_to_gateway(job_name=job_name, gauge_name=gauge, gauge_detail="see gauge name", data=value, labels=labels, grouping_key=grouping_key, pushadd=True)
 
 
+def forecast_to_pg(xml_data):
+    place = Configurations.Endpoints.yr_weather[0].replace('/', '_')
+    forecast_data = xml_data.xpath("//time")
+    if len(forecast_data) > 0:
+        connection = conn()
+        for i, hourly_data in enumerate(forecast_data): 
+            if i < Configurations.YR_Bashboard.lines:
+                hours = f"next_{str(i)}"
+                symbol = _xpath_search(hourly_data, "symbol").attrib['name']
+                temperature = float(_xpath_search(hourly_data, "temperature").attrib['value'])
+                windspeed = float(_xpath_search(hourly_data, "windSpeed").attrib['mps'])
+
+                pg_insert_query = """INSERT INTO public.yr_forecast ("hours", "Weather", "Temperature", "WindSpeed") VALUES (%s,%s,%s,%s)
+                                        ON CONFLICT ("hours")
+                                        DO
+                                            UPDATE 
+                                            SET "Weather" = EXCLUDED."Weather",
+                                            "Temperature" = EXCLUDED."Temperature",
+                                            "WindSpeed" = EXCLUDED."WindSpeed"
+                                        """
+                record_to_insert = (hours, symbol, temperature, windspeed)
+                insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
+        connection.close()
+
+
 
 def _xpath_search(xml_data, query):
     res = xml_data.xpath(query)
@@ -76,9 +101,9 @@ def get_symbol(symbol_element) -> float:
 
 def yr_to_tsdb():
     xml_data = get_yr_data(Configurations.Endpoints.yr_weather)
-    data = reformat_xml_data(xml_data)
-    forecast_to_tsdb(data)
-
+    # data = reformat_xml_data(xml_data)
+    # forecast_to_tsdb(data)
+    forecast_to_pg(xml_data)
 
 if __name__ == "__main__":
     yr_to_tsdb()
