@@ -44,7 +44,7 @@ def _xpath_search(xml_data, query):
     if len(res) > 0:
         return res[0]
 
-def yr_to_pg()
+def yr_to_pg():
     xml_data = get_yr_data(Configurations.Endpoints.yr_weather)
     forecast_to_pg(xml_data)
 
