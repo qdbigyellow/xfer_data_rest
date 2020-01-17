@@ -1,7 +1,7 @@
 from flask import Flask
 from  nordea_loan.get_rate_data_to_dashboard import loan_data_to_tsdb
 from financial_modeling.company_data_to_tsdb import company_data_to_tsdb
-from yr_weather.yr_weather_to_tsdb import yr_to_tsdb
+from yr_weather.yr_weather_to_tsdb import yr_to_pg
 
 app = Flask(__name__)
 
@@ -21,7 +21,7 @@ def transfer_finanical_data_to_dashboard():
 
 @app.route("/yr")
 def transfer_yrweather_data_to_dashboard():
-    yr_to_tsdb()
+    yr_to_pg()
     return "Get weather data done"
 
 
