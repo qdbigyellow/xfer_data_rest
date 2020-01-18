@@ -1,13 +1,4 @@
 #!/bin/sh
-
-if [ -z "$(git status --porcelain)" ]; then
-  echo "no uncommited changes"
-else
-  git add .
-  git commit -m "auto commit from fedora server"
-fi
-
-
 #https://stackoverflow.com/questions/3258243/check-if-pull-needed-in-git
 git remote -v update
 
@@ -26,7 +17,7 @@ elif [ $LOCAL = $BASE ]; then
     docker restart app
 elif [ $REMOTE = $BASE ]; then
     echo "Need to push"
-    git push
+    echo "Production use release branch. No push is allowed!"
 else
     echo "Diverged"
 fi
