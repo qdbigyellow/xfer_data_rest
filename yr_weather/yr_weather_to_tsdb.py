@@ -65,7 +65,7 @@ def _xpath_search(xml_data, query):
         [xml]: Xpath query returns a list of matches.  Return the first element.
     """
     res = xml_data.xpath(query)
-    return res[0] is len(res) > 0 else None
+    return res[0] if len(res) > 0 else None
 
 def yr_to_pg():
     xml_data = get_yr_data(Configurations.Endpoints.yr_weather)
