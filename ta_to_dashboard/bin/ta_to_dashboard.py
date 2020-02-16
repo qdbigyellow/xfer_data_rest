@@ -60,21 +60,17 @@ SYMBOL_LIST = {
 
 
 def truncate_ta_table(connection):
-    cur = connection.cursor()
-    cur.execute('truncate table ta')
-    connection.commit()
-    cur.execute('truncate table ta_overbuy')
-    connection.commit()
-    cur.close()
+    pg_insert_query = """truncate table ta"""
+    insert_query(connection, query=pg_insert_query, data=None)
+    pg_insert_query = """truncate table ta_overbuy"""
+    insert_query(connection, query=pg_insert_query, data=None)
     connection.close()
-
 
 
 
 def ta_to_dashboard(exec_idx):
     db_ip = os.getenv("PG_HOST", "192.168.0.6")
     connection = conn(host=db_ip)
-    cur = conn.cursor()
 
     if exec_idx.lower() == "truncate":
         truncate_ta_table(connection)
@@ -123,20 +119,14 @@ def ta_to_dashboard(exec_idx):
             
             pg_insert_query = """INSERT INTO public.ta ("symbol", "price", "adx", "rsi", "bbandshigh") VALUES (%s,%s,%s,%s,%s)"""
             record_to_insert = (s, price, mkt_adx[0], mkt_rsi[0], mkt_bbands[0])
-            # insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
-            cur.execute(pg_insert_query, record_to_insert)
-            connection.commit()
+            insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
 
         if all(mkt_bbands < price) and np.average(mkt_adx) > 40 and np.average(mkt_rsi) > 75 and np.average(mkt_adx[0:2]) > np.average(mkt_adx[2:4]) and np.average(mkt_rsi[0:2]) > np.average(mkt_rsi[2:4]):
             # Write the data to database
             pg_insert_query = """INSERT INTO public.ta_overbuy ("symbol", "price", "adx", "rsi", "bbandshigh") VALUES (%s,%s,%s,%s,%s)"""
             record_to_insert = (s, price, mkt_adx[0], mkt_rsi[0], mkt_bbands[0])
-            # insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
-            cur.execute(pg_insert_query, record_to_insert)
-            connection.commit()
+            insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
             
-
-    cur.close()
     connection.close()
 
 if __name__ == "__main__":
