@@ -33,6 +33,7 @@ def forecast_to_pg(xml_data):
     if len(forecast_data) > 0:
         db_ip = os.getenv("PG_HOST", "192.168.0.6")
         connection = conn(host=db_ip)
+        cur = connection.cursor()
         for i, hourly_data in enumerate(forecast_data): 
             if i < Configurations.YR_Bashboard.lines:
                 hours = f"next_{str(i)}"
@@ -49,8 +50,10 @@ def forecast_to_pg(xml_data):
                                             "WindSpeed" = EXCLUDED."WindSpeed"
                                         """
                 record_to_insert = (hours, symbol, temperature, windspeed)
-                insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
+                # insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
+                cur.execute(pg_insert_query, record_to_insert)
                 connection.commit()
+        cur.close()
         connection.close()
 
 
