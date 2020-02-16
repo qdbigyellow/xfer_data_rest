@@ -26,7 +26,7 @@ def transfer_yrweather_data_to_dashboard():
     return "Get weather data done"
 
 @app.route("/ta/<exec_idx>")
-def transfer_ta_data_to_dashboard():
+def transfer_ta_data_to_dashboard(exec_idx):
     ta_to_dashboard(exec_idx)
 
 
