@@ -59,13 +59,14 @@ SYMBOL_LIST = {
 }
 
 
-def truncate_ta_table(conn):
-    cur = conn.cursor()
+def truncate_ta_table(connection):
+    cur = connection.cursor()
     cur.execute('truncate table ta')
-    conn.commit()
+    connection.commit()
     cur.execute('truncate table ta_overbuy')
-    conn.commit()
-    conn.close()
+    connection.commit()
+    cur.close()
+    connection.close()
 
 
 
@@ -73,6 +74,7 @@ def truncate_ta_table(conn):
 def ta_to_dashboard(exec_idx):
     db_ip = os.getenv("PG_HOST", "192.168.0.6")
     connection = conn(host=db_ip)
+    cur = conn.cursor()
 
     if exec_idx.lower() == "truncate":
         truncate_ta_table(connection)
@@ -115,22 +117,26 @@ def ta_to_dashboard(exec_idx):
             continue
         else:
             price = float(price)
-
+        
         if mkt_bbands[0] < price and any(mkt_bbands > price) and 40 > np.average(mkt_adx) > 30 and 75 > np.average(mkt_adx) > 60 and np.average(mkt_adx[0:2]) > np.average(mkt_adx[2:4]) and np.average(mkt_rsi[0:2]) > np.average(mkt_rsi[2:4]):
             # Write the data to database
+            
             pg_insert_query = """INSERT INTO public.ta ("symbol", "price", "adx", "rsi", "bbandshigh") VALUES (%s,%s,%s,%s,%s)"""
             record_to_insert = (s, price, mkt_adx[0], mkt_rsi[0], mkt_bbands[0])
-            insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
+            # insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
+            cur.execute(pg_insert_query, record_to_insert)
             connection.commit()
 
         if all(mkt_bbands < price) and np.average(mkt_adx) > 40 and np.average(mkt_rsi) > 75 and np.average(mkt_adx[0:2]) > np.average(mkt_adx[2:4]) and np.average(mkt_rsi[0:2]) > np.average(mkt_rsi[2:4]):
             # Write the data to database
             pg_insert_query = """INSERT INTO public.ta_overbuy ("symbol", "price", "adx", "rsi", "bbandshigh") VALUES (%s,%s,%s,%s,%s)"""
             record_to_insert = (s, price, mkt_adx[0], mkt_rsi[0], mkt_bbands[0])
-            insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
+            # insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
+            cur.execute(pg_insert_query, record_to_insert)
             connection.commit()
+            
 
-
+    cur.close()
     connection.close()
 
 if __name__ == "__main__":
