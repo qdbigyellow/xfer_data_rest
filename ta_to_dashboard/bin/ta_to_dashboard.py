@@ -106,7 +106,15 @@ def ta_to_dashboard(exec_idx):
         
 
         resp = requests.get(f"https://financialmodelingprep.com/api/v3/stock/real-time-price/{s}")
+        data = resp.json()
+        if not "price" in data.keys():
+            continue 
+        
         price = resp.json()["price"]
+        if price is None:
+            continue
+        else:
+            price = float(price)
 
         if mkt_bbands[0] < price and any(mkt_bbands > price) and 40 > np.average(mkt_adx) > 30 and 75 > np.average(mkt_adx) > 60 and np.average(mkt_adx[0:2]) > np.average(mkt_adx[2:4]) and np.average(mkt_rsi[0:2]) > np.average(mkt_rsi[2:4]):
             # Write the data to database
