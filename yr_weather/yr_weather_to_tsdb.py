@@ -5,6 +5,8 @@ from typing import Sequence, Mapping
 from lib.tsdb.prom import push_data_to_gateway
 from lib.pg_connector import conn, insert_query
 import os
+import logging
+
 
 def get_yr_data(location):
     """Download the YR weather from API
@@ -17,6 +19,7 @@ def get_yr_data(location):
     """
     if location is None:
         location = Configurations.Endpoints.yr_weather[0]
+    logging.info(f"Check weather of {location}")
     url = f"https://www.yr.no/place/{location}/forecast_hour_by_hour.xml"
     resp = requests.get(url)
     xml_data = etree.XML(resp.content)
@@ -31,6 +34,7 @@ def forecast_to_pg(xml_data):
     place = Configurations.Endpoints.yr_weather[0].replace('/', '_')
     forecast_data = xml_data.xpath("//time")
     if len(forecast_data) > 0:
+        logging.info(f"Found {len(forecast_data)} records")
         db_ip = os.getenv("PG_HOST", "192.168.0.6")
         connection = conn(host=db_ip)
         for i, hourly_data in enumerate(forecast_data): 
@@ -39,7 +43,7 @@ def forecast_to_pg(xml_data):
                 symbol = _xpath_search(hourly_data, "symbol").attrib['name']
                 temperature = float(_xpath_search(hourly_data, "temperature").attrib['value'])
                 windspeed = float(_xpath_search(hourly_data, "windSpeed").attrib['mps'])
-
+                logging(f"data: {hours}, {symbol}, {temperature}, {windspeed}")
                 pg_insert_query = """INSERT INTO public.yr_forecast ("hours", "Weather", "Temperature", "WindSpeed") VALUES (%s,%s,%s,%s)
                                         ON CONFLICT ("hours")
                                         DO
