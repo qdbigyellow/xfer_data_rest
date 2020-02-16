@@ -50,6 +50,7 @@ def forecast_to_pg(xml_data):
                                         """
                 record_to_insert = (hours, symbol, temperature, windspeed)
                 insert_query(connection=connection, query=pg_insert_query, data=record_to_insert)
+                connection.commit()
         connection.close()
 
 
