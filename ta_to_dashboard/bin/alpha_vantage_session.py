@@ -1,6 +1,6 @@
 import requests
 import json
-from indicator import Adx, Rsi, BBands
+from ta_to_dashboard.bin.indicator import Adx, Rsi, BBands
 from typing import Sequence, Mapping
 import numpy as np
 
