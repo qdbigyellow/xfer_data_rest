@@ -1,5 +1,5 @@
 import requests
-from alpha_vantage_session import AlphaVantageSession
+from ta_to_dashboard.bin.alpha_vantage_session import AlphaVantageSession
 from indicator import Adx, Rsi, BBands
 import time
 from lib.pg_connector import conn, insert_query
