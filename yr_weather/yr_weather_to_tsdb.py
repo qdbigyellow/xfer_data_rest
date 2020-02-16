@@ -17,8 +17,6 @@ def get_yr_data(location):
     Returns:
         etree XML: xml document
     """
-    if location is None:
-        location = Configurations.Endpoints.yr_weather[0]
     logging.info(f"Check weather of {location}")
     url = f"https://www.yr.no/place/{location}/forecast_hour_by_hour.xml"
     resp = requests.get(url)
@@ -43,7 +41,7 @@ def forecast_to_pg(xml_data):
                 symbol = _xpath_search(hourly_data, "symbol").attrib['name']
                 temperature = float(_xpath_search(hourly_data, "temperature").attrib['value'])
                 windspeed = float(_xpath_search(hourly_data, "windSpeed").attrib['mps'])
-                logging(f"data: {hours}, {symbol}, {temperature}, {windspeed}")
+                logging.info(f"data: {hours}, {symbol}, {temperature}, {windspeed}")
                 pg_insert_query = """INSERT INTO public.yr_forecast ("hours", "Weather", "Temperature", "WindSpeed") VALUES (%s,%s,%s,%s)
                                         ON CONFLICT ("hours")
                                         DO
@@ -72,7 +70,7 @@ def _xpath_search(xml_data, query):
     return res[0] if len(res) > 0 else None
 
 def yr_to_pg():
-    xml_data = get_yr_data(Configurations.Endpoints.yr_weather)
+    xml_data = get_yr_data(Configurations.Endpoints.yr_weather[0])
     forecast_to_pg(xml_data)
 
 
@@ -137,4 +135,3 @@ def yr_to_tsdb():
     xml_data = get_yr_data(Configurations.Endpoints.yr_weather)
     data = reformat_xml_data(xml_data)
     forecast_to_tsdb(data)
-
