@@ -86,9 +86,6 @@ def ta_to_dashboard(exec_idx):
     bbands = BBands()
     av = AlphaVantageSession(apikey)
 
-
-
-    symbol_list = ["msft", "aapl"]
     for s in symbol_list:
         if av.call_counter < 498:
             time.sleep(15) 
