@@ -17,7 +17,11 @@ class AlphaVantageSession:
 
     def adx(self, symbol, adx: Adx, length=5):
         url = f"{self.BASE_URL}?function=adx&symbol={symbol}&interval={adx.interval}&time_period={adx.time_period}&series_type={adx.series_type}&apikey={self.APIKEY}"
-        j_data = self.get_json(url)[adx.data_key]
+        resp = self.get_json(url)
+        if adx.data_key in resp.keys():
+            j_data = resp[adx.data_key]
+        else:
+            return np.zeros(5)
 
         key_list = list(j_data.keys())[0:length]
         value_list = self.get_values(j_data, key_list, adx.key) 
@@ -28,6 +32,12 @@ class AlphaVantageSession:
     def rsi(self, symbol, rsi: Rsi, length=5):
         url = f"{self.BASE_URL}?function=rsi&symbol={symbol}&interval={rsi.interval}&time_period={rsi.time_period}&series_type={rsi.series_type}&apikey={self.APIKEY}"
         j_data = self.get_json(url)[rsi.data_key]
+        resp = self.get_json(url)
+        if rsi.data_key in resp.keys():
+            j_data = resp[rsi.data_key]
+        else:
+            return np.zeros(5)
+
         key_list = list(j_data.keys())[0:length]
         value_list = self.get_values(j_data, key_list, rsi.key) 
 
@@ -35,7 +45,12 @@ class AlphaVantageSession:
 
     def bbands(self, symbol, bbands: BBands, length=5):
         url = f"{self.BASE_URL}?function=bbands&symbol={symbol}&interval={bbands.interval}&time_period={bbands.time_period}&series_type={bbands.series_type}&nbdevup={bbands.up}&nbdevdn={bbands.down}&apikey={self.APIKEY}"
-        j_data = self.get_json(url)[bbands.data_key]
+        resp = self.get_json(url)
+        if bbands.data_key in resp.keys():
+            j_data = resp[bbands.data_key]
+        else:
+            return np.zeros(5)
+        
         key_list = list(j_data.keys())[0:length]
         value_list = self.get_values(j_data, key_list, bbands.key) 
 
