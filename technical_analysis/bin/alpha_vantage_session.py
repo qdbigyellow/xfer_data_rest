@@ -1,6 +1,6 @@
 import requests
 import json
-from ta_to_dashboard.bin.indicator import Adx, Rsi, BBands
+from technical_analysis.bin.indicator import Adx, Rsi, BBands
 from typing import Sequence, Mapping
 import numpy as np
 import logging
@@ -25,8 +25,8 @@ class AlphaVantageSession:
 
         c_handler = logging.StreamHandler()
         f_handler = logging.FileHandler(f'{__name__}.log')
-        c_handler.setLevel(logging.WARNING)
-        f_handler.setLevel(logging.ERROR)
+        c_handler.setLevel(logging.DEBUG)
+        f_handler.setLevel(logging.DEBUG)
 
         # Create formatters and add it to handlers
         c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
