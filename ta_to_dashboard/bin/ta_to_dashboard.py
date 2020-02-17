@@ -87,8 +87,10 @@ LOGGER = create_logger()
 def truncate_ta_table(connection):
     pg_insert_query = """truncate table ta"""
     insert_query(connection, query=pg_insert_query, data=None)
+    LOGGER.info("table ta truncated")
     pg_insert_query = """truncate table ta_overbuy"""
     insert_query(connection, query=pg_insert_query, data=None)
+    LOGGER.info("table ta_overbuy truncated")
     connection.close()
 
 
