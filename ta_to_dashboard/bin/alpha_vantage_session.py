@@ -3,6 +3,8 @@ import json
 from ta_to_dashboard.bin.indicator import Adx, Rsi, BBands
 from typing import Sequence, Mapping
 import numpy as np
+import logging
+
 
 class AlphaVantageSession:
     def __init__(self, apikey: str, host="www.alphavantage.co"):
@@ -13,6 +15,30 @@ class AlphaVantageSession:
         self.INTERVAL = "daily"
         self.SERIES_TYPE = "close"
         self.SESSION = self.create_session()
+        self.LOGGER = self.create_logger()
+
+
+    def create_logger(self):
+
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
+
+        c_handler = logging.StreamHandler()
+        f_handler = logging.FileHandler(f'{__name__}.log')
+        c_handler.setLevel(logging.WARNING)
+        f_handler.setLevel(logging.ERROR)
+
+        # Create formatters and add it to handlers
+        c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        c_handler.setFormatter(c_format)
+        f_handler.setFormatter(f_format)
+
+        # Add handlers to the logger
+        logger.addHandler(c_handler)
+        logger.addHandler(f_handler)
+        return logger
+
 
 
     def adx(self, symbol, adx: Adx, length=5):
@@ -20,12 +46,13 @@ class AlphaVantageSession:
         resp = self.get_json(url)
         if adx.data_key in resp.keys():
             j_data = resp[adx.data_key]
+            self.LOGGER.info("ADX data received")
         else:
+            self.LOGGER.warning("No ADX data received")
             return np.zeros(5)
 
         key_list = list(j_data.keys())[0:length]
         value_list = self.get_values(j_data, key_list, adx.key) 
-
 
         return np.array(value_list)
 
@@ -35,7 +62,9 @@ class AlphaVantageSession:
         resp = self.get_json(url)
         if rsi.data_key in resp.keys():
             j_data = resp[rsi.data_key]
+            self.LOGGER.info("RSI data received")
         else:
+            self.LOGGER.warning("No RSI data received")
             return np.zeros(5)
 
         key_list = list(j_data.keys())[0:length]
@@ -48,7 +77,9 @@ class AlphaVantageSession:
         resp = self.get_json(url)
         if bbands.data_key in resp.keys():
             j_data = resp[bbands.data_key]
+            self.LOGGER.info("BBands data received")
         else:
+            self.LOGGER.warning("No BBands data received")
             return np.zeros(5)
         
         key_list = list(j_data.keys())[0:length]
