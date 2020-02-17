@@ -1,6 +1,6 @@
 import requests
-from ta_to_dashboard.bin.alpha_vantage_session import AlphaVantageSession
-from ta_to_dashboard.bin.indicator import Adx, Rsi, BBands
+from technical_analysis.bin.alpha_vantage_session import AlphaVantageSession
+from technical_analysis.bin.indicator import Adx, Rsi, BBands
 import time
 from lib.pg_connector import conn, insert_query
 import numpy as np
@@ -67,8 +67,8 @@ def create_logger():
 
     c_handler = logging.StreamHandler()
     f_handler = logging.FileHandler(f'{__name__}.log')
-    c_handler.setLevel(logging.WARNING)
-    f_handler.setLevel(logging.ERROR)
+    c_handler.setLevel(logging.DEBUG)
+    f_handler.setLevel(logging.DEBUG)
 
     # Create formatters and add it to handlers
     c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
@@ -112,7 +112,6 @@ def ta_to_dashboard(exec_idx):
     rsi = Rsi()
     bbands = BBands()
     av = AlphaVantageSession(apikey)
-
     for s in symbol_list:
         LOGGER.info(f"reading information for {s}")
         if av.call_counter < 498:
