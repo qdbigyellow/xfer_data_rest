@@ -47,7 +47,8 @@ APIKEY = {
     "cn": "BEWAMFQCP8QX3R8D", 
     "eu": "2P0DJRUU9I3A25K8",
     "dk": "9ADK2PQNQGTNB1NR",
-    "default": "FO1UZLB6BYAK9CYB"
+    "default": "FO1UZLB6BYAK9CYB",
+    "worldtradingdata": "rzjynzyO8kiiVNvUlTcaJE0S2r8e2c2fy97GJu5GmssKIBAFbu7SK1wJGGfi"
 
 }
 
@@ -139,14 +140,20 @@ def ta_to_dashboard(exec_idx):
         resp = requests.get(f"https://financialmodelingprep.com/api/v3/stock/real-time-price/{s}")
         data = resp.json()
         if not "price" in data.keys():
-            LOGGER.warning("No Price information available")
-            continue 
+            LOGGER.warning("No Price information available from financialmodelingprep.com")
+
+            resp = requests.get(f"https://api.worldtradingdata.com/api/v1/stock?symbol={s}&api_token={APIKEY.get('worldtradingdata')}")
+            n_data = resp.json()
+            if "data" in n_data.keys():
+                data=float(data["data"][0])
+            else:
+                continue 
         
-        price = resp.json()["price"]
+        price = data["price"]
         if price is None:
             LOGGER.warning("No Price is None")
             continue
-        else:
+        else:           
             price = float(price)
             LOGGER.info(f"current price {price}")
         
