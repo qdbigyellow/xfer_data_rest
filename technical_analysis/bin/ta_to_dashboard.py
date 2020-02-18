@@ -146,7 +146,9 @@ def ta_to_dashboard(exec_idx):
             n_data = resp.json()
             if "data" in n_data.keys():
                 data=float(data["data"][0])
+                LOGGER.infoI("get data from worldtradingdata.com")
             else:
+                LOGGER.warning("No Price information available from worldtradingdata.com")
                 continue 
         
         price = data["price"]
