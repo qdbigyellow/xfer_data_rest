@@ -158,8 +158,7 @@ def ta_to_dashboard(exec_idx):
         else:           
             price = float(price)
             LOGGER.info(f"current price {price}")
-        
-        if mkt_bbands[0] < price and any(mkt_bbands > price) and 40 > np.average(mkt_adx) > 30 and 75 > np.average(mkt_rsi) > 60 and np.average(mkt_adx[0:2]) > np.average(mkt_adx[2:4]) and np.average(mkt_rsi[0:2]) > np.average(mkt_rsi[2:4]):
+        if all(mkt_bbands < price) and np.average(mkt_bbands[0:2]) > np.average(mkt_bbands[2:4]) and 40 > np.average(mkt_adx) > 30 and 75 > np.average(mkt_rsi) > 60 and np.average(mkt_adx[0:2]) > np.average(mkt_adx[2:4]) and np.average(mkt_rsi[0:2]) > np.average(mkt_rsi[2:4]):
             # Write the data to database
             pg_insert_query = """INSERT INTO public.ta ("symbol", "price", "adx", "rsi", "bbandshigh") VALUES (%s,%s,%s,%s,%s)"""
             record_to_insert = (s, price, mkt_adx[0], mkt_rsi[0], mkt_bbands[0])
