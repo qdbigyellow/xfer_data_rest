@@ -95,6 +95,145 @@ def truncate_ta_table(connection):
     connection.close()
 
 
+class Stock:
+    def __init__(self, symbol):
+        symbol = symbol
+        adx = None
+        rsi = None
+        BBands = None
+
+    def strup_up(self):
+        return all(self.bbands < self.price) and \
+                np.average(self.bbands[0:2]) > np.average(self.bbands[2:4]) and \
+                40 > np.average(self.adx) > 30 and \
+                75 > np.average(self.rsi) > 60 and \
+                np.average(self.adx[0:2]) > np.average(self.adx[2:4]) and \
+                np.average(self.rsi[0:2]) > np.average(self.rsi[2:4])
+
+    def overbuy(self):
+        return all(self.bbands < self.price) and \
+                np.average(self.adx) > 40 and \
+                np.average(self.rsi) > 75 and \
+                np.average(self.adx[0:2]) > np.average(self.adx[2:4]) and \
+                np.average(self.rsi[0:2]) > np.average(self.rsi[2:4])
+
+class Engine:
+    def __init__(self, db_ip="192.168.0.6", action="cn"):
+        db_ip = os.getenv("PG_HOST", db_ip)       
+        ta_table = "ta"
+        overbuy_table = "ta_overbuy"
+        LOGGER = create_logger()
+        action = action
+        apikey = APIKEY.get(action)
+        symbol_list = SYMBOL_LIST.get(action, get_non_sp500_symbols(length=150))
+        adx = Adx()
+        rsi = Rsi()
+        bbands = BBands()
+        av = AlphaVantageSession(self.apikey)
+
+
+    def create_logger(self):
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
+
+        c_handler = logging.StreamHandler()
+        f_handler = logging.FileHandler(f'{__name__}.log')
+        c_handler.setLevel(logging.DEBUG)
+        f_handler.setLevel(logging.DEBUG)
+
+        # Create formatters and add it to handlers
+        c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        c_handler.setFormatter(c_format)
+        f_handler.setFormatter(f_format)
+
+        # Add handlers to the logger
+        logger.addHandler(c_handler)
+        logger.addHandler(f_handler)
+        return logger
+
+    
+    def request_json(self, url):
+        resp = requests.get(url)
+        return resp.json()
+
+    def exeucte(self, stock):
+        self.LOGGER.info(f"reading information for {stock.symbol}")
+        if self.av.call_counter < 498:
+            self.LOGGER.info(f"current call counter {self.av.call_counter}")
+            time.sleep(15) 
+        else:
+            return
+
+        stock.adx = self.av.adx(stock.symbol, self.adx)
+        self.LOGGER.info(f"current ADX {stock.adx}")
+        if stock.adx < 30:
+            return
+        time.sleep(15)
+
+        stock.rsi = self.av.rsi(stock.symbol, self.rsi)
+        self.LOGGER.info(f"current RSI {stock.rsi}")
+        if stock.rsi[0] < 60:
+            return
+        time.sleep(15)
+
+        stock.BBands = self.av.bbands(stock.symbol, self.bbands)
+        self.LOGGER.info(f"current BBbands {stock.BBands}")
+        
+        data = self.request_json(url=f"https://financialmodelingprep.com/api/v3/stock/real-time-price/{stock.symobl}")
+        if not "price" in data.keys():
+            self.LOGGER.warning("No Price information available from financialmodelingprep.com")
+            n_data = self.request_json(url=f"https://api.worldtradingdata.com/api/v1/stock?symbol={stock.symbol}&api_token={APIKEY.get('worldtradingdata')}")
+            if "data" in n_data.keys():
+                data=float(data["data"][0])
+                self.LOGGER.infoI("get data from worldtradingdata.com")
+            else:
+                self.LOGGER.warning("No Price information available from worldtradingdata.com")
+                return
+        
+        price = data["price"]
+        if price is None:
+            self.LOGGER.warning("No Price is None")
+            return
+        else:           
+            stock.price = float(price)
+            self.LOGGER.info(f"current price {stock.price}")
+
+        if stock.strong_up(self):
+            self.update_table(self.ta_table)
+
+        if stock.overbuy(self):
+            self.update_table(self.overbuy)
+
+
+    def truncate_table(self, table):
+        db_conn = conn(host=self.db_ip)
+        pg_insert_query = f"""truncate table {table}"""
+        insert_query(self.db_conn, query=pg_insert_query, data=None)
+        self.LOGGER.info(f"table {table} truncated")
+        db_conn.close()
+
+
+    def update_table(self, stock, table):
+        db_conn = conn(host=self.db_ip)
+        pg_insert_query = f"""INSERT INTO public.{table} ("symbol", "price", "adx", "rsi", "bbandshigh") VALUES (%s,%s,%s,%s,%s)"""
+        record_to_insert = (stock.symbol, stock.price, stock.adx[0], stock.rsi[0], stock.bbands[0])
+        insert_query(connection=db_conn, query=pg_insert_query, data=record_to_insert)
+        self.LOGGER.info(f"update {table} table")
+
+        db_conn.close()
+
+def ta_pg(exec_idx):
+    engine = Engine(action=exec_idx)
+    if exec_idx.lower() == "truncate":
+        engine.truncate_table(engine.ta_table)
+        engine.truncate_table(engine.overbuy)
+        return
+
+    for s in engine.symbo_list:
+        stock = Stock(symbol=s)
+        engine.exeucte(stock=stock)          
+
 
 def ta_to_dashboard(exec_idx):
     db_ip = os.getenv("PG_HOST", "192.168.0.6")
