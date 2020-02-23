@@ -2,7 +2,7 @@ from flask import Flask
 from  nordea_loan.get_rate_data_to_dashboard import loan_data_to_tsdb
 from financial_modeling.company_data_to_tsdb import company_data_to_tsdb
 from yr_weather.yr_weather_to_tsdb import yr_to_pg
-from technical_analysis.bin.ta_to_dashboard import ta_to_dashboard
+from technical_analysis.bin.ta_to_dashboard import ta_to_dashboard, ta_pg
 
 app = Flask(__name__)
 
@@ -27,7 +27,8 @@ def transfer_yrweather_data_to_dashboard():
 
 @app.route("/ta/<exec_idx>")
 def transfer_ta_data_to_dashboard(exec_idx):
-    ta_to_dashboard(exec_idx)
+    # ta_to_dashboard(exec_idx)
+    ta_pg(exec_idx)
 
 
 
