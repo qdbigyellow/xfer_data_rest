@@ -101,19 +101,24 @@ class Stock:
         adx = None
         rsi = None
         BBands = None
+        ADX_Level1 = 30
+        ADX_Level2 = 50
+        RSI_Level1 = 65
+        RSI_Level2 = 80
+        
 
-    def strup_up(self):
+    def strong_up(self):
         return all(self.bbands < self.price) and \
                 np.average(self.bbands[0:2]) > np.average(self.bbands[2:4]) and \
-                40 > np.average(self.adx) > 30 and \
-                75 > np.average(self.rsi) > 60 and \
+                self.ADX_Level2 > np.average(self.adx) > self.ADX_Level1 and \
+                self.RSI_Level2 > np.average(self.rsi) > self.RSI_Level1 and \
                 np.average(self.adx[0:2]) > np.average(self.adx[2:4]) and \
                 np.average(self.rsi[0:2]) > np.average(self.rsi[2:4])
 
     def overbuy(self):
         return all(self.bbands < self.price) and \
-                np.average(self.adx) > 40 and \
-                np.average(self.rsi) > 75 and \
+                np.average(self.adx) > self.ADX_LEVEL2 and \
+                np.average(self.rsi) > self.ADX_LEVEL2 and \
                 np.average(self.adx[0:2]) > np.average(self.adx[2:4]) and \
                 np.average(self.rsi[0:2]) > np.average(self.rsi[2:4])
 
