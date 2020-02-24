@@ -97,14 +97,14 @@ def truncate_ta_table(connection):
 
 class Stock:
     def __init__(self, symbol):
-        symbol = symbol
-        adx = None
-        rsi = None
-        BBands = None
-        ADX_Level1 = 30
-        ADX_Level2 = 50
-        RSI_Level1 = 65
-        RSI_Level2 = 80
+        self.symbol = symbol
+        self.adx = None
+        self.rsi = None
+        self.BBands = None
+        self.ADX_Level1 = 30
+        self.ADX_Level2 = 50
+        self.RSI_Level1 = 65
+        self.RSI_Level2 = 80
         
 
     def strong_up(self):
@@ -124,17 +124,17 @@ class Stock:
 
 class Engine:
     def __init__(self, db_ip="192.168.0.6", action="cn"):
-        db_ip = os.getenv("PG_HOST", db_ip)       
-        ta_table = "ta"
-        overbuy_table = "ta_overbuy"
-        LOGGER = create_logger()
-        action = action
-        apikey = APIKEY.get(action)
-        symbol_list = SYMBOL_LIST.get(action, get_non_sp500_symbols(length=150))
-        adx = Adx()
-        rsi = Rsi()
-        bbands = BBands()
-        av = AlphaVantageSession(self.apikey)
+        self.db_ip = os.getenv("PG_HOST", db_ip)       
+        self.ta_table = "ta"
+        self.overbuy_table = "ta_overbuy"
+        self.LOGGER = create_logger()
+        self.action = action
+        self.apikey = APIKEY.get(action)
+        self.symbol_list = SYMBOL_LIST.get(action, get_non_sp500_symbols(length=150))
+        self.adx = Adx()
+        self.rsi = Rsi()
+        self.bbands = BBands()
+        self.av = AlphaVantageSession(self.apikey)
 
 
     def create_logger(self):
