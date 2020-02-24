@@ -17,7 +17,6 @@ class AlphaVantageSession:
         self.SESSION = self.create_session()
         self.LOGGER = self.create_logger()
 
-
     def create_logger(self):
 
         logger = logging.getLogger(__name__)
@@ -38,8 +37,6 @@ class AlphaVantageSession:
         logger.addHandler(c_handler)
         logger.addHandler(f_handler)
         return logger
-
-
 
     def adx(self, symbol, adx: Adx, length=5):
         url = f"{self.BASE_URL}?function=adx&symbol={symbol}&interval={adx.interval}&time_period={adx.time_period}&series_type={adx.series_type}&apikey={self.APIKEY}"
@@ -80,8 +77,7 @@ class AlphaVantageSession:
             self.LOGGER.info("BBands data received")
         else:
             self.LOGGER.warning("No BBands data received")
-            return np.zeros(5)
-        
+            return np.zeros(5)      
         key_list = list(j_data.keys())[0:length]
         value_list = self.get_values(j_data, key_list, bbands.key) 
 
@@ -92,7 +88,7 @@ class AlphaVantageSession:
         resp = self.SESSION.get(url)
         return resp.json()
         
-    def get_values(self, kv: Mapping[str, object], keys: Sequence[str], indicator_key: str) -> Sequence[str] :
+    def get_values(self, kv: Mapping[str, object], keys: Sequence[str], indicator_key: str) -> Sequence[str]:
         """give a dictionary, give a list of keys, return the value of the keys. 
            deeply couple with the data structure of Alpha-Vantage returned data.
         
