@@ -37,6 +37,9 @@ def get_non_sp500_symbols(length: int = 150):
             if "etf" in s["name"].lower():
                 continue
 
+            if "exchange" not in s.keys():
+                continue
+
             if ("NASDAQ" in s["exchange"] or "York" in s["exchange"]) and ("inc" in s["name"].lower() or "corporation" in s["name"].lower() or "limited" in s["name"].lower()):
                 s_list.append(s["symbol"])
 
