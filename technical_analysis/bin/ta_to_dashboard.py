@@ -182,7 +182,7 @@ class Engine:
 
         stock.adx = self.av.adx(stock.symbol, self.adx)
         self.LOGGER.info(f"current ADX {stock.adx}")
-        if stock.adx < 30:
+        if stock.adx[0] < 30:
             return
         time.sleep(15)
 
