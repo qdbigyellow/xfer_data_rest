@@ -197,7 +197,7 @@ class Engine:
 
         data = self.request_json(
             url=f"https://financialmodelingprep.com/api/v3/stock/real-time-price/{stock.symobl}")
-        if not "price" in data.keys():
+        if "price" not in data.keys():
             self.LOGGER.warning(
                 "No Price information available from financialmodelingprep.com")
             n_data = self.request_json(
@@ -298,7 +298,7 @@ def ta_to_dashboard(exec_idx):
         resp = requests.get(
             f"https://financialmodelingprep.com/api/v3/stock/real-time-price/{s}")
         data = resp.json()
-        if not "price" in data.keys():
+        if "price" not in data.keys():
             LOGGER.warning(
                 "No Price information available from financialmodelingprep.com")
 
