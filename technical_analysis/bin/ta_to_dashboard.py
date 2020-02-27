@@ -196,7 +196,7 @@ class Engine:
         self.LOGGER.info(f"current BBbands {stock.BBands}")
 
         data = self.request_json(
-            url=f"https://financialmodelingprep.com/api/v3/stock/real-time-price/{stock.symobl}")
+            url=f"https://financialmodelingprep.com/api/v3/stock/real-time-price/{stock.symbol}")
         if "price" not in data.keys():
             self.LOGGER.warning(
                 "No Price information available from financialmodelingprep.com")
