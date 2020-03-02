@@ -68,6 +68,7 @@ SYMBOL_LIST = {
     "default": get_non_sp500_symbols(150)
 }
 
+
 class Stock:
     def __init__(self, symbol):
         self.symbol = symbol
@@ -216,6 +217,3 @@ def ta_pg(exec_idx):
     for s in engine.symbol_list:
         stock = Stock(symbol=s)
         engine.exeucte(stock=stock)
-
-if __name__ == "__main__":
-    ta_to_dashboard("cn")
