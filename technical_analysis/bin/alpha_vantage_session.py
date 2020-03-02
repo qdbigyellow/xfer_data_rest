@@ -29,7 +29,8 @@ class AlphaVantageSession:
 
         # Create formatters and add it to handlers
         c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        f_format = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         c_handler.setFormatter(c_format)
         f_handler.setFormatter(f_format)
 
@@ -49,7 +50,7 @@ class AlphaVantageSession:
             return np.zeros(5)
 
         key_list = list(j_data.keys())[0:length]
-        value_list = self.get_values(j_data, key_list, adx.key) 
+        value_list = self.get_values(j_data, key_list, adx.key)
 
         return np.array(value_list)
 
@@ -65,7 +66,7 @@ class AlphaVantageSession:
             return np.zeros(5)
 
         key_list = list(j_data.keys())[0:length]
-        value_list = self.get_values(j_data, key_list, rsi.key) 
+        value_list = self.get_values(j_data, key_list, rsi.key)
 
         return np.array(value_list)
 
@@ -77,9 +78,9 @@ class AlphaVantageSession:
             self.LOGGER.info("BBands data received")
         else:
             self.LOGGER.warning("No BBands data received")
-            return np.zeros(5)      
+            return np.zeros(5)
         key_list = list(j_data.keys())[0:length]
-        value_list = self.get_values(j_data, key_list, bbands.key) 
+        value_list = self.get_values(j_data, key_list, bbands.key)
 
         return np.array(value_list)
 
@@ -87,11 +88,11 @@ class AlphaVantageSession:
         self.call_counter += 1
         resp = self.SESSION.get(url)
         return resp.json()
-        
+
     def get_values(self, kv: Mapping[str, object], keys: Sequence[str], indicator_key: str) -> Sequence[str]:
         """give a dictionary, give a list of keys, return the value of the keys. 
            deeply couple with the data structure of Alpha-Vantage returned data.
-        
+
         Args:
             kv (Mapping[str, object]): [description]
             keys (Sequence[str]): [a list of keys, normally the date]
@@ -108,7 +109,8 @@ class AlphaVantageSession:
 
     def create_session(self):
         return requests.Session()
-        
+
+
 if __name__ == "__main__":
     av = AlphaVantageSession("9ADK2PQNQGTNB1NR")
     adx = Adx()
