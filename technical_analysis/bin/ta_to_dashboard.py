@@ -48,8 +48,8 @@ def get_non_sp500_symbols(length: int = 150):
     else:
         return ["aapl", "msft"]
 
-    ind = random.randint(0, len(s_list)-length)
-    return s_list[ind: ind+length-1]
+    ind = random.randint(0, len(s_list) - length)
+    return s_list[ind: ind + length - 1]
 
 
 APIKEY = {
@@ -67,43 +67,6 @@ SYMBOL_LIST = {
     "dk": SP500[332:],
     "default": get_non_sp500_symbols(150)
 }
-
-
-def create_logger():
-
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-
-    c_handler = logging.StreamHandler()
-    f_handler = logging.FileHandler(f'{__name__}.log')
-    c_handler.setLevel(logging.DEBUG)
-    f_handler.setLevel(logging.DEBUG)
-
-    # Create formatters and add it to handlers
-    c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-    f_format = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    c_handler.setFormatter(c_format)
-    f_handler.setFormatter(f_format)
-
-    # Add handlers to the logger
-    logger.addHandler(c_handler)
-    logger.addHandler(f_handler)
-    return logger
-
-
-LOGGER = create_logger()
-
-
-def truncate_ta_table(connection):
-    pg_insert_query = """truncate table ta"""
-    insert_query(connection, query=pg_insert_query, data=None)
-    LOGGER.info("table ta truncated")
-    pg_insert_query = """truncate table ta_overbuy"""
-    insert_query(connection, query=pg_insert_query, data=None)
-    LOGGER.info("table ta_overbuy truncated")
-    connection.close()
-
 
 class Stock:
     def __init__(self, symbol):
@@ -253,93 +216,6 @@ def ta_pg(exec_idx):
     for s in engine.symbol_list:
         stock = Stock(symbol=s)
         engine.exeucte(stock=stock)
-
-
-def ta_to_dashboard(exec_idx):
-    db_ip = os.getenv("PG_HOST", "192.168.0.6")
-    connection = conn(host=db_ip)
-
-    if exec_idx.lower() == "truncate":
-        truncate_ta_table(connection)
-        LOGGER.info("Database truncated")
-        return
-
-    apikey = APIKEY.get(exec_idx, "FO1UZLB6BYAK9CYB")
-    symbol_list = SYMBOL_LIST.get(exec_idx, get_non_sp500_symbols(length=150))
-    LOGGER.info(f"use execution index {exec_idx}")
-
-    adx = Adx()
-    rsi = Rsi()
-    bbands = BBands()
-    av = AlphaVantageSession(apikey)
-    for s in symbol_list:
-        LOGGER.info(f"reading information for {s}")
-        if av.call_counter < 498:
-            LOGGER.info(f"current call counter {av.call_counter}")
-            time.sleep(15)
-        else:
-            break
-
-        mkt_adx = av.adx(s, adx)
-        LOGGER.info(f"current ADX {mkt_adx}")
-        if mkt_adx[0] < 30:
-            continue
-        time.sleep(15)
-
-        mkt_rsi = av.rsi(s, rsi)
-        LOGGER.info(f"current RSI {mkt_rsi}")
-        if mkt_rsi[0] < 60:
-            continue
-        time.sleep(15)
-
-        mkt_bbands = av.bbands(s, bbands)
-        LOGGER.info(f"current BBbands {mkt_bbands}")
-
-        resp = requests.get(
-            f"https://financialmodelingprep.com/api/v3/stock/real-time-price/{s}")
-        data = resp.json()
-        if "price" not in data.keys():
-            LOGGER.warning(
-                "No Price information available from financialmodelingprep.com")
-
-            resp = requests.get(
-                f"https://api.worldtradingdata.com/api/v1/stock?symbol={s}&api_token={APIKEY.get('worldtradingdata')}")
-            n_data = resp.json()
-            if "data" in n_data.keys():
-                data = float(data["data"][0])
-                LOGGER.infoI("get data from worldtradingdata.com")
-            else:
-                LOGGER.warning(
-                    "No Price information available from worldtradingdata.com")
-                continue
-
-        price = data["price"]
-        if price is None:
-            LOGGER.warning("No Price is None")
-            continue
-        else:
-            price = float(price)
-            LOGGER.info(f"current price {price}")
-        if all(mkt_bbands < price) and np.average(mkt_bbands[0:2]) > np.average(mkt_bbands[2:4]) and 40 > np.average(mkt_adx) > 30 and 75 > np.average(mkt_rsi) > 60 and np.average(mkt_adx[0:2]) > np.average(mkt_adx[2:4]) and np.average(mkt_rsi[0:2]) > np.average(mkt_rsi[2:4]):
-            # Write the data to database
-            pg_insert_query = """INSERT INTO public.ta ("symbol", "price", "adx", "rsi", "bbandshigh") VALUES (%s,%s,%s,%s,%s)"""
-            record_to_insert = (
-                s, price, mkt_adx[0], mkt_rsi[0], mkt_bbands[0])
-            insert_query(connection=connection,
-                         query=pg_insert_query, data=record_to_insert)
-            LOGGER.info(f"update ta table")
-
-        if all(mkt_bbands < price) and np.average(mkt_adx) > 40 and np.average(mkt_rsi) > 75 and np.average(mkt_adx[0:2]) > np.average(mkt_adx[2:4]) and np.average(mkt_rsi[0:2]) > np.average(mkt_rsi[2:4]):
-            # Write the data to database
-            pg_insert_query = """INSERT INTO public.ta_overbuy ("symbol", "price", "adx", "rsi", "bbandshigh") VALUES (%s,%s,%s,%s,%s)"""
-            record_to_insert = (
-                s, price, mkt_adx[0], mkt_rsi[0], mkt_bbands[0])
-            insert_query(connection=connection,
-                         query=pg_insert_query, data=record_to_insert)
-            LOGGER.info(f"update ta_overbuy table")
-
-    connection.close()
-
 
 if __name__ == "__main__":
     ta_to_dashboard("cn")
