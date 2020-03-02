@@ -100,7 +100,7 @@ class Engine:
         self.db_ip = os.getenv("PG_HOST", db_ip)
         self.ta_table = "ta"
         self.overbuy_table = "ta_overbuy"
-        self.LOGGER = create_logger()
+        self.LOGGER = self.create_logger()
         self.action = action
         self.apikey = APIKEY.get(action)
         self.symbol_list = SYMBOL_LIST.get(
