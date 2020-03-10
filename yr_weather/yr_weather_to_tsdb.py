@@ -37,7 +37,7 @@ def forecast_to_pg(xml_data):
         connection = conn(host=db_ip)
         for i, hourly_data in enumerate(forecast_data): 
             if i < Configurations.YR_Bashboard.lines:
-                hours = f"next_{str(i)}"
+                hours = f"+{str(i).zfill(2)} hours"  # zfill() will pad leading zeros
                 symbol = _xpath_search(hourly_data, "symbol").attrib['name']
                 temperature = float(_xpath_search(hourly_data, "temperature").attrib['value'])
                 windspeed = float(_xpath_search(hourly_data, "windSpeed").attrib['mps'])
