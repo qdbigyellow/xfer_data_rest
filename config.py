@@ -16,5 +16,5 @@ class Configurations:
         PUSH_GATEWAY = "9091"
 
     class YR_Bashboard:
-        lines = 8
+        lines = 16
         job_name = "YR_weather"
