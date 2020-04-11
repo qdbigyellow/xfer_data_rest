@@ -56,6 +56,7 @@ def process_loan_rate_data(data):
     rates = []
     worksheet = work_sheet(0)
     worksheet.delete_rows(1, 100)
+    worksheet.append_row(["Loan Type", "Rate"])
     for loan in data:
         name = "nordea_loan"
         rate = loan["rate"].replace("*&nbsp;", "").replace(",", ".")
