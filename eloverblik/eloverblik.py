@@ -56,7 +56,7 @@ def read_eloverblik():
     readings = resp["result"][0]["MyEnergyData_MarketDocument"]["TimeSeries"][0]["Period"]
 
     worksheet = work_sheet(0)
-    worksheet.delete_rows(1, 100)
+    worksheet.delete_rows(1, worksheet.row_count)
     worksheet.append_row(["Day", "KwH"])
     for rd in readings:
         date = rd["timeInterval"]["end"]
@@ -67,7 +67,7 @@ def read_eloverblik():
     resp = read_time_series(token, delta=6 * 30, aggregation='Month')
     readings_month = resp["result"][0]["MyEnergyData_MarketDocument"]["TimeSeries"][0]["Period"]
     worksheet = work_sheet(1)
-    worksheet.delete_rows(1, 100)
+    worksheet.delete_rows(1, worksheet.row_count)
     worksheet.append_row(["Month", "KwH"])
     for rd in readings_month:
         date = rd["timeInterval"]["end"]
