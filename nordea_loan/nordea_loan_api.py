@@ -55,7 +55,7 @@ def fetch_data():
 def process_loan_rate_data(data):
     rates = []
     worksheet = work_sheet(0)
-    worksheet.delete_rows(1, 100)
+    worksheet.delete_rows(1, worksheet.row_count)
     worksheet.append_row(["Loan Type", "Rate"])
     for loan in data:
         name = "nordea_loan"
